@@ -1,0 +1,96 @@
+
+Considerando os dados da tabela: [dbo].[Cad_Prontuario](
+	[idProntuario] [int] IDENTITY(1,1) NOT FOR REPLICATION NOT NULL,
+    Campo auto explicativo. 
+
+	[idCliente] [int] NULL,
+	identificador de clientes. 
+
+    [idDependente] [int] NULL,
+	Identificador de dependentes, quando o valor nao e null ou 0. Significa que o paciente é dependente.
+
+    [Matricula] [bigint] NULL,
+    Número da matricula do paciente na operadora.
+
+	[idEndereco] [int] NULL,
+	sao algumas unidades e cada uma delas possui um idendereco e uma letra correspondente:
+    em /tables/cad_endereco.json tem a correspondência de cada idendereco a que posto pertence. 
+    Inclusive, e a lista de postos de atendimento que dispomos (filiais).
+    Este campo mostra o idendereco da matrícula do cliente, não do posto onde esta ocorrendo o atendimento. 
+    É comum ele vir null, nao e importante para o projeto.
+
+    [Paciente] [varchar](100) NULL,
+    nome do paciente e um dos dois campos que usamos para ter certeza que o paciente e ele mesmo. usamos este campo em conjunto com o campo DataNascimento para confirmar que os atendimentos são do paciente, não usamos o id. O conjunto nome e [data de nacimento] no select que define isso.
+    É desta forma que encontramos um paciente no banco de dados:
+	select * from cad_prontuario where paciente = 'cristiano silva souza' and DataNascimento = '12/10/1985'
+
+	[Idade] [int] NULL,
+	Idade do paciente no dia do atendimento.
+
+	[DataNascimento] [datetime] NULL,
+	Data de nascimento do paciente no dia do atendimento.
+
+	[Peso] [money] NULL,
+	[Altura] [money] NULL,
+	Peso e altura do paciente no dia do atendimento.
+	
+	[PArterialInicio] [money] NULL,
+	PAS pressão sistólica do paciente no dia do atendimento.
+
+	[PArterialFim] [money] NULL,
+	PAD pressão diastólica do paciente no dia do atendimento.
+
+	[DoencasCronicas] [text] NULL,
+	Registro de doenças do paciente. Este campo permanece preenchido em novos atendimentos, com o tempo, é atualizado por novos medicos em novos atendimentos, ou nao.
+
+	[MedicaoAnterior] [text] NULL,
+	Campo em que o medico preenche os medicamentos que o paciente faz uso continuo, regular ou esta usando no momento.
+
+	[Queixa] [text] NULL,
+	Campo que o medico preenche o motivo do paciente estar na consulta. O que motivou ele a procurar um medico. Por exemplo: Dor de cabeca. Dor de barriga, etc. 
+
+	[Conduta] [text] NULL,
+	Local onde o medico escreve a conclusao deste atendimento. O que prescreveu para o paciente. O que considera necessario. Se encaminha o paciente para outro especialista, etc. Um exemplo de um atendimento que a queixa e dor de cabeca, a conduta pode ser a medicacao prescrita, por exemplo, dipirona injetavel. 
+
+	[Desativado] [bit] NOT NULL,
+	Campo do sistema para saber se uma folha de prontuario esta cancelada. se = 1 nao e exibido no sistema. 
+
+	[DataInicioConsulta] [datetime] NULL,
+	Campo autoexplicativo. 
+
+	[DataFimConsulta] [datetime] NULL,
+	Campo autoexplicativo. 
+	
+	[idMedico] [int] NULL,
+	campo id do medico atendente deste prontuario. Neste atendimento.
+
+	[Observacao] [text] NULL,
+	Neste campo os medicos preenchem o HPP (historico patologico pregresso), HDA (historia da doenca atual), HF (historico familiar). Exemplo de preenchimento do campo:
+	RINITE ALERGICA AGUDIZADA, EM TTO COM NOEX 64MCG, COM CORIZA + ESTERNUTOS.
+
+	[Informacao] [text] NULL,
+	campo que fica preenchido em novos atendimentos com os dados preenchidos anteriormente, como doencas cronicas, ate que um medico apague, continua aparecendo. E, claro, o medico pode por informacoes aqui que seja relevantes em todos os atendimentos do paciente. Algo que sempre o medico atendente tem de ler e saber, por exemplo: NEGA ALERGIA MEDICAMENTOSA, ou alergico a penicilina. 
+
+	[Temperatura] [money] NULL,
+	campo autoexplicativo.
+
+	[Bpm] [money] NULL,
+	Batimentos cardiacos por minuto.
+
+	[idEspecialidade] [int] NULL,
+	id da especialidade do medico atendente. 
+	
+	[Especialidade] [varchar](100) NULL,
+	especialidade do medico atendente.
+	
+	[NomeSocial] [varchar](100) NULL,
+	Caso o paciente tenha nome social, este e o nome pelo qual ele deseja ser chamado.
+	
+	[PacienteAtendido] [bit] NULL,
+	campo em que medico clica em sim no sistema para informar que o paciente compareceu a consulta. 
+	compareceu = 1 e faltou = null ou 0. 
+	não e muito confiavel esta informacao. 
+	Ter registros escritos nos campos, principalmente nos tres campos principais, queixa, observacao e conduta, definem que houve atendimento.
+
+    profissional_atendente ou nome: 
+	medico, nutricionista, etc. profissional que preencheu o prontuario e atendeu ao paciente.
