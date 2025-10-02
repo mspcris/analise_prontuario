@@ -1,0 +1,69 @@
+// select idEndereco, codigo, Descricao from Cad_Endereco where AtendimentoAtivoPosto = 1
+
+[
+  {
+    "idEndereco": 1,
+    "codigo": "R",
+    "Descricao": "Realengo"
+  },
+  {
+    "idEndereco": 2,
+    "codigo": "C",
+    "Descricao": "Campinho"
+  },
+  {
+    "idEndereco": 3,
+    "codigo": "A",
+    "Descricao": "Anchieta"
+  },
+  {
+    "idEndereco": 4,
+    "codigo": "J",
+    "Descricao": "Jacarepaguá"
+  },
+  {
+    "idEndereco": 5,
+    "codigo": "G",
+    "Descricao": "Campo Grande"
+  },
+  {
+    "idEndereco": 6,
+    "codigo": "I",
+    "Descricao": "Nova Iguaçu"
+  },
+  {
+    "idEndereco": 7,
+    "codigo": "B",
+    "Descricao": "Bangu"
+  },
+  {
+    "idEndereco": 12,
+    "codigo": "N",
+    "Descricao": "Nilópolis"
+  },
+  {
+    "idEndereco": 20,
+    "codigo": "D",
+    "Descricao": "Del Castilho"
+  },
+  {
+    "idEndereco": 21,
+    "codigo": "X",
+    "Descricao": "X Campo Grande"
+  },
+  {
+    "idEndereco": 25,
+    "codigo": "M",
+    "Descricao": "Madureira"
+  },
+  {
+    "idEndereco": 26,
+    "codigo": "P",
+    "Descricao": "Rio das Pedras"
+  },
+  {
+    "idEndereco": 51,
+    "codigo": "Y",
+    "Descricao": "Y Campo Grande"
+  }
+]

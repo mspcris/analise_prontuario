@@ -1,0 +1,117 @@
+
+Considerando os dados da tabela: [dbo].[Cad_Prontuario](
+	[idProntuario] [int] IDENTITY(1,1) NOT FOR REPLICATION NOT NULL,
+    Campo auto explicativo. 
+
+	[idCliente] [int] NULL,
+	identificador de clientes. 
+
+    [idDependente] [int] NULL,
+	Identificador de dependentes, quando o valor nao e null ou 0. Significa que o paciente é dependente.
+
+    [Matricula] [bigint] NULL,
+    Número da matricula do paciente na operadora.
+
+	[idEndereco] [int] NULL,
+	sao algumas unidades e cada uma delas possui um idendereco e uma letra correspondente:
+    
+
+    [Paciente] [varchar](100) NULL,
+	[Idade] [int] NULL,
+	[DataNascimento] [datetime] NULL,
+	[Peso] [money] NULL,
+	[Altura] [money] NULL,
+	[PArterialInicio] [money] NULL,
+	[PArterialFim] [money] NULL,
+	[AnamneseAtualizada] [bit] NULL,
+	[DataUltimoAtendimento] [datetime] NULL,
+	[DataUltimaAnamese] [datetime] NULL,
+	[Atendido] [bit] NULL,
+	[DoencasCronicas] [text] NULL,
+	[UsaMedicacao] [bit] NULL,
+	[MedicaoAnterior] [text] NULL,
+	[Queixa] [text] NULL,
+	[Conduta] [text] NULL,
+	[Desativado] [bit] NOT NULL,
+	[DataInicioConsulta] [datetime] NULL,
+	[DataFimConsulta] [datetime] NULL,
+	[idLancamentoServico] [int] NULL,
+	[idMedico] [int] NULL,
+	[Observacao] [text] NULL,
+	[Informacao] [text] NULL,
+	[Temperatura] [money] NULL,
+	[Bpm] [money] NULL,
+	[Falta] [bit] NULL,
+	[idClienteFichaManual] [int] NULL,
+	[codigoPessoal] [int] NULL,
+	[LiberarRetornoQuantidade] [int] NULL,
+	[idServico] [int] NULL,
+	[Codigo] [int] NULL,
+	[idLancamento] [int] NULL,
+	[Confere] [bit] NOT NULL,
+	[idusuarioconfirmapresenca] [int] NULL,
+	[DataConfirmacaoConsulta] [datetime] NULL,
+	[DataHora] [datetime] NULL,
+	[idEspecialidade] [int] NULL,
+	[Consulta] [int] NULL,
+	[ObservacaoMedico] [text] NULL,
+	[DataConsulta] [datetime] NULL,
+	[StatusAguardar] [bit] NULL,
+	[HoraPrevistaConsulta] [varchar](5) NULL,
+	[idProntuarioStatus] [int] NULL,
+	[Desistencia] [bit] NOT NULL,
+	[DataDesistencia] [datetime] NULL,
+	[MotivoDesistencia] [text] NULL,
+	[idUsuarioDesistencia] [int] NULL,
+	[DataEstorno] [datetime] NULL,
+	[ValorDebito] [money] NULL,
+	[DataUltimoExameEntregueOuLiberado] [datetime] NULL,
+	[StatusAtendimento] [bit] NULL,
+	[Guia] [bit] NULL,
+	[PossuiGuia] [bit] NOT NULL,
+	[Plano] [bit] NULL,
+	[Revisao] [bit] NULL,
+	[DataLiberadoRX] [datetime] NULL,
+	[idusuarioRX] [int] NULL,
+	[Especialidade] [varchar](100) NULL,
+	[AtendimentoAnterior] [bit] NULL,
+	[DesistenciaSiteInformacoes] [varchar](1000) NULL,
+	[CPF] [varchar](11) NULL,
+	[NomeSocial] [varchar](100) NULL,
+	[MaePaciente] [varchar](100) NULL,
+	[PaiPaciente] [varchar](100) NULL,
+	[CartaoNacionalSus] [varchar](100) NULL,
+	[PacienteAtendido] [bit] NULL,
+	[LogInclusao] [varchar](250) NULL,
+	[AtendidoPeloMedico] [bit] NULL,
+	[Acolhimento] [bit] NULL,
+	[AcolhimentoMinutoMaximo] [int] NULL,
+	[dataAcolhimento] [datetime] NULL,
+	[Questionario] [bit] NULL,
+	[DiagnosticoEnfermaria] [text] NULL,
+	[Enfermaria] [bit] NULL,
+	[ValorCustoConsulta] [money] NULL,
+	[idProntuarioModeloObservacao] [int] NULL,
+	[FrequenciaRespiratoria] [int] NULL,
+	[observacaoAntiga] [nvarchar](max) NULL,
+	[ClienteNaoPossuiWhatsapp] [bit] NULL,
+ CONSTRAINT [PK_Cad_Prontuario] PRIMARY KEY CLUSTERED 
+(
+	[idProntuario] ASC
+)WITH (PAD_INDEX = ON, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 80, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Cad_Prontuario] ADD  CONSTRAINT [DF_Cad_Prontuario_Desativado]  DEFAULT (0) FOR [Desativado]
+GO
+
+ALTER TABLE [dbo].[Cad_Prontuario] ADD  DEFAULT ((0)) FOR [Confere]
+GO
+
+ALTER TABLE [dbo].[Cad_Prontuario] ADD  DEFAULT ((0)) FOR [Desistencia]
+GO
+
+ALTER TABLE [dbo].[Cad_Prontuario] ADD  DEFAULT ((0)) FOR [PossuiGuia]
+GO
+
+
