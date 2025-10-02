@@ -1,0 +1,42 @@
+https://github.com/mspcris/analise_prontuario
+
+Analise os arquivos do meu repositório:
+já tenho o .env com os dados de conexão ao banco de dados. com os campos db_user_a, db_password_a, db_base, db_host_a. 
+E os dados de conexão com a groq
+
+GROQ_API_NAME e GROQ_API_KEY
+
+também tem a chave da api do chatgpt com o nome API_CHATGPT
+
+Preciso montar um código que eu entro com as seguintes informações:
+
+1) Nome completo do paciente.
+2) Data de nascimento do paciente em dd/mm/yyyy.
+3) Queixa atual do paciente.
+
+Exemplo de preenchimento: 
+
+1) Nome completo do paciente.
+Cristiano Silva Souza
+2) Data de nascimento do paciente em dd/mm/yyyy.
+12/10/1985
+3) Queixa atual do paciente.
+Informação que vou enviar: Cefaleia e dor de barriga.
+
+Os campos 1 e 2 servem para fazer o select no banco e obter todos os dados de todos os atendimentos anteriores do paciente usando o select_prontuarios.sql.
+O campo paciente receberá Cristiano Silva Souza e o campo datanascimento receberá a data de nascimento 12/10/1985. 
+
+Serão 13 selects que, se não vierem vazios, irão gerar 13 jsons separados e depois todos serão juntados em um só, apagando os temporários individuais.
+Cada conexão com cada banco de dados segue o padrão. Estão os arquivos sql na pasta /sql. Exemplo select_a_prontuarios.sql, select_b_prontuarios.sql, etc.
+Cada letra desta está na pasta table/cad_endereco.json onde cada letra representa uma unidade, uma clínica diferente.
+
+
+com o json montado juntando todos os dados de todos os postos. 
+
+Quero que enviar a queixa atual do paciente e quero que a GROQ ou OPENAI, vai aparecer uma pergunta para eu escolher qual api utilizar para processar as informações, analisem os dados de todos os atendimentos registrados anteriores ao atual.
+
+Considerando os dados, a ia vai se comportar como um médico de muitos anos de clinica, experiente e olhar cada texto antes escrito. Medicamentos que o paciente já tomou, se ele já se queixou de cefaleia antes, note que cefaleia é o mesmo que dor de cabeça. Por ser um medico muito experiente, a ia saberá lidar com nomes escritos errados, fazer uma taxa de acerto de 60% ou mais, então incluir na resposta, se relevante. é importante que a informação trazida seja relevante considerando o atendimento atual.  
+
+VOCE ESTA FALANDO COM UM MEDICO, NAO COM O PACIENTE. SEJA DIRETO COM O OUTRO MEDICO QUE ESTA ATENDENDO. 
+
+Se voce vai citar um exame que diz algo no prontuario antigo voce tem de dizer data e posto(unidade) em que este prontuario esta para o medico abrir e ler o prontuario e confirmar o que voce sugere. 

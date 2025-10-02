@@ -1,0 +1,26 @@
+# ======================
+# Configura??o do Groq
+# ======================
+[groq]
+model = "openai/gpt-oss-120b"   # troque aqui quando quiser
+temperature = 0                 # determin?stico p/ reduzir alucina??o
+top_p = 1
+max_completion_tokens = 16000   # ajuste ao limite do seu plano
+stream = false
+reasoning_effort = ""           # "", "low", "medium", "high" (use vazio se n?o quiser enviar)
+json_mode = false               # true => for?a resposta em JSON
+stop = ["</relatorio>"]         # ou [] se n?o quiser stop
+
+# ======================
+# Par?metros de process.
+# ======================
+[processing]
+chunk_size = 200
+sleep_between_calls = 0.8
+max_retries = 3
+retry_backoff = 2.0
+top_n = 30
+fields_keep = [
+  "cidade", "Bairro", "Especializa??o", "M?dico",
+  "Data e hora", "Data consulta", "Sexo", "idadePaciente"
+]

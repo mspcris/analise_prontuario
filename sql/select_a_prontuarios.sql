@@ -30,4 +30,4 @@ p.pacienteatendido,
 m.Nome as profissional_atendente 
 from cad_prontuario p
 left join cad_medico m on m.idMedico = p.idmedico
-where paciente = 'cristiano silva souza' and p.DataNascimento = '12/10/1985'
+where paciente = ? and p.DataNascimento = ?
