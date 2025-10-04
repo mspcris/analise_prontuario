@@ -83,7 +83,7 @@ def build_conn_str(
 ) -> str:
     server = f"tcp:{host},{port or '1433'}"
     common = (
-        "DRIVER={ODBC Driver 17 for SQL Server};"
+        "DRIVER={ODBC Driver 18 for SQL Server};"
         f"SERVER={server};DATABASE={base};"
         f"Encrypt={encrypt};TrustServerCertificate={trust_cert};"
         f"Connection Timeout={timeout or '5'}"
