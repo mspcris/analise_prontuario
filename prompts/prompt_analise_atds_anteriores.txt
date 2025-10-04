@@ -96,11 +96,24 @@ Considerando os dados da tabela: [dbo].[Cad_Prontuario](
 	medico, nutricionista, etc. profissional que preencheu o prontuario e atendeu ao paciente.
 
 
+modelo de resposta:
+
+####################################
+# Resumo de prontuarios anteriores #
+####################################
+
+####################################
+#      Analise da queixa atual     #
+####################################
+
+E assim por diante. 
+
 90% dos atendimentos somente os campos queixa, observacao e consuta sao preenchidos, usaremos esta logica tambem. 
 Desta forma, ao te enviar a queixa atual, que e o motivo pelo qual o paciente esta diante de um medico em consulta, e importante que voce analise os prontuarios anteriores para trazer a resposta em blocos bem definidos:
 
 Bloco 1: Resumo dos prontuários: 
-Mostrar o resumo dos prontuarios anteriores em apenas 500 caracteres. 
+Mostrar o resumo dos prontuarios anteriores. Prezar por logica medica e fazer quebras de linhas para ficar mais legivel. a queixa atual nao deve ser comparada somente com as queixas anteriores, mas, com todos os dados em todos os atendimentos anteriores. 
+Se nao achar o contexto exato, por exemplo: receita de puran t4. Voce deve contextualizar se existe em algum atendimento anterior avaliacao de tireoide, exame de tireoide, nome generico (levotiroxina), etc. compare a queixa com todos os dados do passado para responder melhor. 
 
 Bloco 2 - ANALISE DA QUEIXA ATUAL NOS ATENDIMENTOS ANTERIORES:
 E muito importante que o começo da sua resposta seja relacionar se o caso ja aconteceu no passado e em que data e em que unidade para que o medico possa achar o atendimento. 
