@@ -208,3 +208,6 @@ __marimo__/
 
 # Pasta json
 json/
+
+# Local env
+.env*
