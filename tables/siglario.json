@@ -1,0 +1,4909 @@
+[
+  {
+    "idSiglario": 9,
+    "Abreviatura": "1ário",
+    "Significado": "primário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 10,
+    "Abreviatura": "1T",
+    "Significado": "um tempo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 11,
+    "Abreviatura": "2ário",
+    "Significado": "secundário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 12,
+    "Abreviatura": "2T",
+    "Significado": "dois tempos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 13,
+    "Abreviatura": "3ário",
+    "Significado": "terciário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 14,
+    "Abreviatura": "3T",
+    "Significado": "três tempos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 15,
+    "Abreviatura": "4T",
+    "Significado": "quatro tempos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 16,
+    "Abreviatura": "A",
+    "Significado": "aborto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 17,
+    "Abreviatura": "A/E",
+    "Significado": "a esclarecer",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 18,
+    "Abreviatura": "AA",
+    "Significado": "ar ambiente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 19,
+    "Abreviatura": "AAA",
+    "Significado": "anictérico, acianótico e afebril",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 20,
+    "Abreviatura": "AAS",
+    "Significado": "ácido acetil salicílico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 21,
+    "Abreviatura": "AAVV",
+    "Significado": "artérias e veias",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 22,
+    "Abreviatura": "ABD",
+    "Significado": "abdome",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 23,
+    "Abreviatura": "AC",
+    "Significado": "ausculta cardíaca",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 24,
+    "Abreviatura": "Ac U",
+    "Significado": "ácido úrico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 25,
+    "Abreviatura": "ACLS",
+    "Significado": "sigla em inglês para Suporte Avançado de Vida em Cardiologia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 26,
+    "Abreviatura": "ACM",
+    "Significado": "a critério médico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 27,
+    "Abreviatura": "ACO",
+    "Significado": "anticoncepcional oral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 28,
+    "Abreviatura": "ACV",
+    "Significado": "aparelho cardiovascular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 29,
+    "Abreviatura": "AD",
+    "Significado": "átrio direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 30,
+    "Abreviatura": "ADH",
+    "Significado": "sigla em inglês para hormônio antidiurético",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 31,
+    "Abreviatura": "AE",
+    "Significado": "átrio esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 32,
+    "Abreviatura": "AESP",
+    "Significado": "atividade elétrica sem pulso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 33,
+    "Abreviatura": "AF",
+    "Significado": "antecedentes familiares",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 34,
+    "Abreviatura": "AGE",
+    "Significado": "ácidos graxos essenciais",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 35,
+    "Abreviatura": "AHT",
+    "Significado": "ambos hemitórax",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 36,
+    "Abreviatura": "AIDS",
+    "Significado": "equivalente em inglês de síndrome da imunodeficiência adquirida. Também permitido e preferível o equivalente em português: SIDA.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 37,
+    "Abreviatura": "AINE",
+    "Significado": "anti-inflamatório não esteróide",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 38,
+    "Abreviatura": "AINH",
+    "Significado": "anti-inflamatório não hormonal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 39,
+    "Abreviatura": "AIT",
+    "Significado": "acidente isquêmico transitório",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 40,
+    "Abreviatura": "Amp ou amp",
+    "Significado": "ampola",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 41,
+    "Abreviatura": "ANVISA",
+    "Significado": "Agencia Nacional de Vigilância Sanitária",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 42,
+    "Abreviatura": "AO",
+    "Significado": "abertura ocular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 43,
+    "Abreviatura": "AP",
+    "Significado": "antecedentes pessoais",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 44,
+    "Abreviatura": "APS",
+    "Significado": "Atenção Primária à Saúde",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 45,
+    "Abreviatura": "AR",
+    "Significado": "aparelho respiratório",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 46,
+    "Abreviatura": "ARA",
+    "Significado": "antagonista dos receptores da angiotensina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 47,
+    "Abreviatura": "ASA",
+    "Significado": "escala utilizada para avaliar risco cirúrgico (classes de I- V da American Society of Anesthesiologists)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 48,
+    "Abreviatura": "ASC",
+    "Significado": "área de superfície corpórea",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 49,
+    "Abreviatura": "ATB",
+    "Significado": "antibiótico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 50,
+    "Abreviatura": "ATC",
+    "Significado": "angioplastia transluminal coronariana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 51,
+    "Abreviatura": "Atm",
+    "Significado": "atmosfera(s) (unidade de pressão)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 52,
+    "Abreviatura": "ATM",
+    "Significado": "articulação temporo mandibular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 53,
+    "Abreviatura": "ATP",
+    "Significado": "adenosina trifosfato",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 54,
+    "Abreviatura": "ATQ",
+    "Significado": "artroplastia total de quadril",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 55,
+    "Abreviatura": "AU",
+    "Significado": "altura uterina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 56,
+    "Abreviatura": "Aux. Enf.",
+    "Significado": "auxiliar de enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 57,
+    "Abreviatura": "AV",
+    "Significado": "átrio-ventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 58,
+    "Abreviatura": "AVC",
+    "Significado": "acidente vascular cerebral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 59,
+    "Abreviatura": "AVCH",
+    "Significado": "acidente vascular cerebral hemorrágico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 60,
+    "Abreviatura": "AVCI",
+    "Significado": "acidente vascular cerebral isquêmico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 61,
+    "Abreviatura": "AVCI",
+    "Significado": "acidente vascular cerebral isquêmico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 62,
+    "Abreviatura": "AVE",
+    "Significado": "acidente vascular encefálico. Também permitido AVC (acidente vascular cerebral), quando a lesão for no cérebro.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 63,
+    "Abreviatura": "AVEH",
+    "Significado": "acidente vascular encefálico hemorrágico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 64,
+    "Abreviatura": "AVEI",
+    "Significado": "acidente vascular encefálico isquêmico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 65,
+    "Abreviatura": "AVF",
+    "Significado": "anteversoflexão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 66,
+    "Abreviatura": "AVP",
+    "Significado": "acesso venoso periférico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 67,
+    "Abreviatura": "BANF",
+    "Significado": "bulhas arrítmicas normofonéticas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 68,
+    "Abreviatura": "BAV",
+    "Significado": "bloqueio átrio-ventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 69,
+    "Abreviatura": "BAVT",
+    "Significado": "bloqueio átrio-ventricular total",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 70,
+    "Abreviatura": "BB ou",
+    "Significado": "beta-bloqueadores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 71,
+    "Abreviatura": "BCE",
+    "Significado": "broncoespasmo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 72,
+    "Abreviatura": "BCF",
+    "Significado": "batimento cárdio-fetal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 73,
+    "Abreviatura": "BCG",
+    "Significado": "bacilo de Calmette-Guérin. Vacina anti-tuberculose",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 74,
+    "Abreviatura": "BCP",
+    "Significado": "broncopneumonia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 75,
+    "Abreviatura": "BCRD",
+    "Significado": "bloqueio completo do ramo direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 76,
+    "Abreviatura": "BCRE",
+    "Significado": "bloqueio completo de ramo esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 77,
+    "Abreviatura": "BE",
+    "Significado": "equivalente em inglês de excesso de base",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 78,
+    "Abreviatura": "BEG",
+    "Significado": "bom estado geral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 79,
+    "Abreviatura": "BH",
+    "Significado": "balanço hídrico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 80,
+    "Abreviatura": "BHCG -HCG",
+    "Significado": "sigla em inglês para: gonadotrofina coriônica humana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 81,
+    "Abreviatura": "BI",
+    "Significado": "bomba de infusão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 82,
+    "Abreviatura": "BIC",
+    "Significado": "bomba de infusão contínua",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 83,
+    "Abreviatura": "BIPAP",
+    "Significado": "sigla em inglês para: pressão positiva intermitente bifásica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 84,
+    "Abreviatura": "BK",
+    "Significado": "bacilo de Koch. Mycobacterium tuberculosis",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 85,
+    "Abreviatura": "BLS",
+    "Significado": "sigla em inglês para: Suporte Básico de Vida",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 86,
+    "Abreviatura": "BNF",
+    "Significado": "bulhas normofonéticas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 87,
+    "Abreviatura": "BP",
+    "Significado": "baixo peso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 88,
+    "Abreviatura": "bpm",
+    "Significado": "batimentos por minuto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 89,
+    "Abreviatura": "BPP",
+    "Significado": "boa perfusão periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 90,
+    "Abreviatura": "BRD",
+    "Significado": "bloqueio de ramo direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 91,
+    "Abreviatura": "BRE",
+    "Significado": "bloqueio de ramo esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 92,
+    "Abreviatura": "BRNF",
+    "Significado": "bulhas rítmicas normofonéticas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 93,
+    "Abreviatura": "BV",
+    "Significado": "baixo ventre",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 94,
+    "Abreviatura": "Bx",
+    "Significado": "biópsia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 95,
+    "Abreviatura": "C/ ou c/",
+    "Significado": "com",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 96,
+    "Abreviatura": "Ca",
+    "Significado": "cálcio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 97,
+    "Abreviatura": "CA",
+    "Significado": "câncer",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 98,
+    "Abreviatura": "CACG",
+    "Significado": "cineangiocoronariografia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 99,
+    "Abreviatura": "Cal",
+    "Significado": "calorias",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 100,
+    "Abreviatura": "Cat O2",
+    "Significado": "cateter de oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 101,
+    "Abreviatura": "CATE",
+    "Significado": "cateterismo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 102,
+    "Abreviatura": "CC",
+    "Significado": "centro cirúrgico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 103,
+    "Abreviatura": "Cça ou cça",
+    "Significado": "criança",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 104,
+    "Abreviatura": "CCIH",
+    "Significado": "Comissão de Controle de Infecção Hospitalar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 105,
+    "Abreviatura": "CD",
+    "Significado": "conduta",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 106,
+    "Abreviatura": "CDI",
+    "Significado": "cardio desfibrilador implantável",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 107,
+    "Abreviatura": "CDL",
+    "Significado": "cateter duplo lúmen",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 108,
+    "Abreviatura": "CEC",
+    "Significado": "circulação extra corpórea",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 109,
+    "Abreviatura": "CEE",
+    "Significado": "Comissão de Ética de Enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 110,
+    "Abreviatura": "CFM",
+    "Significado": "Conselho Federal de Medicina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 111,
+    "Abreviatura": "CFT",
+    "Significado": "Comissão de Farmácia e Terapêutica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 112,
+    "Abreviatura": "CHAAA",
+    "Significado": "corado, hidratado, anictérico, acianótico e afebril",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 113,
+    "Abreviatura": "CIA",
+    "Significado": "comunicação intra-atrial",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 114,
+    "Abreviatura": "CIAP",
+    "Significado": "Classificação Internacional de Atenção Primária",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 115,
+    "Abreviatura": "CID",
+    "Significado": "Código Internacional de Doenças",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 116,
+    "Abreviatura": "CINE",
+    "Significado": "cinecoronariografia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 117,
+    "Abreviatura": "CIPA",
+    "Significado": "Comissão Interna de Previsão de Acidentes",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 118,
+    "Abreviatura": "CIV",
+    "Significado": "comunicação interventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 119,
+    "Abreviatura": "CK",
+    "Significado": "creatinofosfoquinase",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 120,
+    "Abreviatura": "CK-MB",
+    "Significado": "creatinoquinase, fração MB",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 121,
+    "Abreviatura": "cm",
+    "Significado": "centímetro(s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 122,
+    "Abreviatura": "CM",
+    "Significado": "centro médico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 123,
+    "Abreviatura": "cmH2O",
+    "Significado": "centímetro(s) de água",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 124,
+    "Abreviatura": "CMTE ou Cmte",
+    "Significado": "comandante",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 125,
+    "Abreviatura": "CMV",
+    "Significado": "citomegalovírus",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 126,
+    "Abreviatura": "CNES",
+    "Significado": "Cadastro Nacional de Estabelecimento de Saúde",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 127,
+    "Abreviatura": "CO",
+    "Significado": "monóxido de carbono",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 128,
+    "Abreviatura": "CO2",
+    "Significado": "gás carbônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 129,
+    "Abreviatura": "COD3",
+    "Significado": "código 3",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 130,
+    "Abreviatura": "COFEN",
+    "Significado": "Conselho Federal de Enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 131,
+    "Abreviatura": "COLONO",
+    "Significado": "colonoscopia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 132,
+    "Abreviatura": "Comp. ou comp.",
+    "Significado": "comprimido (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 133,
+    "Abreviatura": "Cont.",
+    "Significado": "contínua",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 134,
+    "Abreviatura": "COREN",
+    "Significado": "Conselho Regional de Enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 135,
+    "Abreviatura": "COT",
+    "Significado": "cânula orotraqueal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 136,
+    "Abreviatura": "CP",
+    "Significado": "cateter peritonial",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 137,
+    "Abreviatura": "CPAP",
+    "Significado": "sigla em inglês para pressão positiva contínua nas vias aéreas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 138,
+    "Abreviatura": "CPM",
+    "Significado": "conforme prescrição médica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 139,
+    "Abreviatura": "CPRE",
+    "Significado": "Colangiopancreatografia retrógrada exploradora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 140,
+    "Abreviatura": "CQDF",
+    "Significado": "Comitê de Qualificação e Desenvolvimento de Fornecedores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 141,
+    "Abreviatura": "Cr",
+    "Significado": "creatinina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 142,
+    "Abreviatura": "CREMESP",
+    "Significado": "Conselho Regional de Medicina do Estado de São Paulo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 143,
+    "Abreviatura": "CRF",
+    "Significado": "Conselho Regional de Farmácia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 144,
+    "Abreviatura": "CRH",
+    "Significado": "sigla em inglês para: hormônio liberador da corticotropina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 145,
+    "Abreviatura": "CRM",
+    "Significado": "Conselho Regional de Medicina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 146,
+    "Abreviatura": "CSST",
+    "Significado": "com supradesnivelamento do segmento ST. Também permitido: com supra de ST.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 147,
+    "Abreviatura": "CT",
+    "Significado": "colesterol total",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 148,
+    "Abreviatura": "CTG",
+    "Significado": "cardiotocografia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 149,
+    "Abreviatura": "CTI",
+    "Significado": "centro de terapia intensiva. Também permitido: UTI (unidade de terapia intensiva)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 150,
+    "Abreviatura": "CU",
+    "Significado": "contração uterina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 151,
+    "Abreviatura": "CUIPA",
+    "Significado": "Ambulatório de cuidados paliativos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 152,
+    "Abreviatura": "CV",
+    "Significado": "cardioversão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 153,
+    "Abreviatura": "CVC",
+    "Significado": "cateter venoso central",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 154,
+    "Abreviatura": "CVE",
+    "Significado": "cardioversão elétrica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 155,
+    "Abreviatura": "CVP",
+    "Significado": "cateter venoso periférico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 156,
+    "Abreviatura": "d",
+    "Significado": "dia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 157,
+    "Abreviatura": "D",
+    "Significado": "direito(a), também admitido quando seguido de siglas diagnósticas ou anatômicas.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 158,
+    "Abreviatura": "DAC",
+    "Significado": "doença arterial crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 159,
+    "Abreviatura": "DAOP",
+    "Significado": "doença arterial oclusiva periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 160,
+    "Abreviatura": "DAP",
+    "Significado": "doença arterial periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 161,
+    "Abreviatura": "DB",
+    "Significado": "descompressão brusca",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 162,
+    "Abreviatura": "DC",
+    "Significado": "débito cardíaco",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 163,
+    "Abreviatura": "DCV",
+    "Significado": "doença cardiovascular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 164,
+    "Abreviatura": "DD",
+    "Significado": "decúbito dorsal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 165,
+    "Abreviatura": "DDA",
+    "Significado": "doença diarréica aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 166,
+    "Abreviatura": "DDH",
+    "Significado": "decúbito dorsal horizontal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 167,
+    "Abreviatura": "DEA",
+    "Significado": "desfibrilador externo automático",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 168,
+    "Abreviatura": "Dextro",
+    "Significado": "dextrostix",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 169,
+    "Abreviatura": "DHE",
+    "Significado": "distúrbio hidroeletrolítico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 170,
+    "Abreviatura": "DHEG",
+    "Significado": "doença hipertensiva específica da gravidez",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 171,
+    "Abreviatura": "DHL",
+    "Significado": "desidrogenase láctica. Também aceito o equivalente em inglês: LDH",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 172,
+    "Abreviatura": "DI",
+    "Significado": "diabetes insipidus",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 173,
+    "Abreviatura": "DIH",
+    "Significado": "dia de internação hospitalar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 174,
+    "Abreviatura": "DIP",
+    "Significado": "doença inflamatória pélvica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 175,
+    "Abreviatura": "DIU",
+    "Significado": "dispositivo intrauterino",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 176,
+    "Abreviatura": "DL",
+    "Significado": "duplo lúmen",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 177,
+    "Abreviatura": "DLA",
+    "Significado": "dupla lesão aórtica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 178,
+    "Abreviatura": "DLD",
+    "Significado": "decúbito lateral direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 179,
+    "Abreviatura": "DLE",
+    "Significado": "decúbito lateral esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 180,
+    "Abreviatura": "DLP",
+    "Significado": "dislipidemia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 181,
+    "Abreviatura": "DM",
+    "Significado": "diabetes mellitus",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 182,
+    "Abreviatura": "DMID",
+    "Significado": "diabetes mellitus insulino dependente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 183,
+    "Abreviatura": "DN",
+    "Significado": "data de nascimento",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 184,
+    "Abreviatura": "DNPM",
+    "Significado": "desenvolvimento neuropsicomotor",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 185,
+    "Abreviatura": "DNV",
+    "Significado": "distúrbio neurovegetativo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 186,
+    "Abreviatura": "DP",
+    "Significado": "diálise peritoneal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 187,
+    "Abreviatura": "DPI",
+    "Significado": "diálise peritoneal intermitente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 188,
+    "Abreviatura": "DPN",
+    "Significado": "dispnéia paroxística noturna",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 189,
+    "Abreviatura": "DPOC",
+    "Significado": "doença pulmonar obstrutiva crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 190,
+    "Abreviatura": "DPP",
+    "Significado": "descolamento prematuro da placenta",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 191,
+    "Abreviatura": "Dr.",
+    "Significado": "doutor",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 192,
+    "Abreviatura": "Dra.",
+    "Significado": "doutora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 193,
+    "Abreviatura": "DRC",
+    "Significado": "doença renal crônica. Permitido também IRC para insuficiência renal crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 194,
+    "Abreviatura": "DRGE",
+    "Significado": "doença refluxo gastroesofágico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 195,
+    "Abreviatura": "DST",
+    "Significado": "doença sexualmente transmissível",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 196,
+    "Abreviatura": "DU",
+    "Significado": "débito urinário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 197,
+    "Abreviatura": "DUM",
+    "Significado": "data da última menstruação",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 198,
+    "Abreviatura": "DV",
+    "Significado": "dia (s) de vida",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 199,
+    "Abreviatura": "DVA",
+    "Significado": "droga vasoativa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 200,
+    "Abreviatura": "DVE",
+    "Significado": "derivação ventricular externa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 201,
+    "Abreviatura": "DVH",
+    "Significado": "decúbito ventral horizontal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 202,
+    "Abreviatura": "DVP",
+    "Significado": "derivação ventrículo peritoneal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 203,
+    "Abreviatura": "DX",
+    "Significado": "dextrostix. Válido também dextro.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 204,
+    "Abreviatura": "E",
+    "Significado": "esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 205,
+    "Abreviatura": "EAO",
+    "Significado": "estenose aórtica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 206,
+    "Abreviatura": "EAP",
+    "Significado": "edema agudo de pulmão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 207,
+    "Abreviatura": "EC",
+    "Significado": "estertores crepitantes",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 208,
+    "Abreviatura": "ECA",
+    "Significado": "enzima conversora da angiotensina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 209,
+    "Abreviatura": "ECG",
+    "Significado": "eletrocardiograma",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 210,
+    "Abreviatura": "ECMO",
+    "Significado": "circulação e oxigenação extracorpóresa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 211,
+    "Abreviatura": "ECO",
+    "Significado": "ecocardiograma",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 212,
+    "Abreviatura": "EDA",
+    "Significado": "endoscopia digestiva alta",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 213,
+    "Abreviatura": "EDB",
+    "Significado": "endoscopia digestiva baixa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 214,
+    "Abreviatura": "EED",
+    "Significado": "esofagogastroduodenoscopia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 215,
+    "Abreviatura": "EEG",
+    "Significado": "eletroencefalograma",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 216,
+    "Abreviatura": "EF",
+    "Significado": "exame físico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 217,
+    "Abreviatura": "ELA",
+    "Significado": "esclerose lateral amiotrófica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 218,
+    "Abreviatura": "Enf.",
+    "Significado": "enfermeira (o)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 219,
+    "Abreviatura": "ENMG",
+    "Significado": "eletroneuromiografia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 220,
+    "Abreviatura": "EP",
+    "Significado": "embolia pulmonar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 221,
+    "Abreviatura": "EPAP",
+    "Significado": "sigla em inglês para: pressão positiva expiratória nas vias aéreas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 222,
+    "Abreviatura": "EPI",
+    "Significado": "equipamento de proteção individual",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 223,
+    "Abreviatura": "ESC",
+    "Significado": "estertores subcrepitantes",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 224,
+    "Abreviatura": "ESSV",
+    "Significado": "extrassístole supra ventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 225,
+    "Abreviatura": "ESV",
+    "Significado": "extrassístole ventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 226,
+    "Abreviatura": "etc",
+    "Significado": "etecetera",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 227,
+    "Abreviatura": "EV",
+    "Significado": "endovenoso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 228,
+    "Abreviatura": "EWS",
+    "Significado": "Early warning score (Escore de alerta precoce)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 229,
+    "Abreviatura": "Ex",
+    "Significado": "exame (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 230,
+    "Abreviatura": "Ex Lab",
+    "Significado": "exames laboratoriais",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 231,
+    "Abreviatura": "FA",
+    "Significado": "fibrilação atrial",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 232,
+    "Abreviatura": "FAB",
+    "Significado": "ferimento por arma branca",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 233,
+    "Abreviatura": "FAC",
+    "Significado": "fibrilação atrial crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 234,
+    "Abreviatura": "FAF",
+    "Significado": "ferimento por arma de fogo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 235,
+    "Abreviatura": "FANT",
+    "Significado": "fontanela anterior normotensa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 236,
+    "Abreviatura": "FAV",
+    "Significado": "fístula artério-venosa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 237,
+    "Abreviatura": "FC",
+    "Significado": "frequência cardíaca",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 238,
+    "Abreviatura": "FCC",
+    "Significado": "ferimento corto contuso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 239,
+    "Abreviatura": "FCF",
+    "Significado": "frequência cardíaca fetal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 240,
+    "Abreviatura": "FD",
+    "Significado": "flanco direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 241,
+    "Abreviatura": "FE",
+    "Significado": "flanco esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 242,
+    "Abreviatura": "FEM",
+    "Significado": "feminino (gênero)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 243,
+    "Abreviatura": "FID",
+    "Significado": "fossa ilíaca direita",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 244,
+    "Abreviatura": "FIE",
+    "Significado": "fossa ilíaca esquerda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 245,
+    "Abreviatura": "FiO2",
+    "Significado": "fração inspiratória de oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 246,
+    "Abreviatura": "FISIO",
+    "Significado": "fisioterapia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 247,
+    "Abreviatura": "FLACC",
+    "Significado": "sigla em inglês para faces, pernas, braços, choro e consolabilidade, quando se referindo à escala de dor",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 248,
+    "Abreviatura": "FM",
+    "Significado": "força muscular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 249,
+    "Abreviatura": "FO",
+    "Significado": "ferida operatória",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 250,
+    "Abreviatura": "FONO",
+    "Significado": "fonoaudiologia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 251,
+    "Abreviatura": "FR",
+    "Significado": "frequência respiratória",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 252,
+    "Abreviatura": "FSH",
+    "Significado": "sigla em inglês para hormônio folículo estimulante",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 253,
+    "Abreviatura": "FU",
+    "Significado": "fundo uterino",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 254,
+    "Abreviatura": "FV",
+    "Significado": "fibrilação ventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 255,
+    "Abreviatura": "FX",
+    "Significado": "fratura",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 256,
+    "Abreviatura": "g",
+    "Significado": "grama(s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 257,
+    "Abreviatura": "G",
+    "Significado": "gestação",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 258,
+    "Abreviatura": "G 25%",
+    "Significado": "glicose 25%",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 259,
+    "Abreviatura": "G 50%",
+    "Significado": "glicose 50%",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 260,
+    "Abreviatura": "GABA",
+    "Significado": "sigla em inglês para: ácido gama aminobutírico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 261,
+    "Abreviatura": "GB",
+    "Significado": "glóbulos brancos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 262,
+    "Abreviatura": "GCS",
+    "Significado": "sigla em inglês para escala de coma de glasgow",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 263,
+    "Abreviatura": "GECA",
+    "Significado": "gastroenterocolite aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 264,
+    "Abreviatura": "GED",
+    "Significado": "gerenciador de documentos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 265,
+    "Abreviatura": "GGT",
+    "Significado": "gama glutamiltransferase",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 266,
+    "Abreviatura": "GH",
+    "Significado": "sigla em inglês para: hormônio do crescimento",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 267,
+    "Abreviatura": "GIG",
+    "Significado": "gigante para a idade gestacional",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 268,
+    "Abreviatura": "Glic",
+    "Significado": "glicose",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 269,
+    "Abreviatura": "GLOB",
+    "Significado": "globulina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 270,
+    "Abreviatura": "GO",
+    "Significado": "ginecologia e obstetrícia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 271,
+    "Abreviatura": "GTM",
+    "Significado": "gastrostomia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 272,
+    "Abreviatura": "GTS ou gts",
+    "Significado": "gotas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 273,
+    "Abreviatura": "h",
+    "Significado": "hora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 274,
+    "Abreviatura": "H",
+    "Significado": "hospital",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 275,
+    "Abreviatura": "H. Pilory",
+    "Significado": "Helicobacter pilory",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 276,
+    "Abreviatura": "HAC",
+    "Significado": "hipertensão arterial crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 277,
+    "Abreviatura": "HAP",
+    "Significado": "hipertensão arterial pulmonar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 278,
+    "Abreviatura": "HAS",
+    "Significado": "hipertensão arterial sistêmica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 279,
+    "Abreviatura": "HB",
+    "Significado": "hemoglobina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 280,
+    "Abreviatura": "HBA1c ou A1C",
+    "Significado": "hemoglobina glicada",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 281,
+    "Abreviatura": "HCD",
+    "Significado": "hipocôndrio direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 282,
+    "Abreviatura": "HCE",
+    "Significado": "hipocôndrio esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 283,
+    "Abreviatura": "HCM",
+    "Significado": "hemoglobina corpuscular média",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 284,
+    "Abreviatura": "HCO3",
+    "Significado": "bicarbonato. Também permitido: HCO3-",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 285,
+    "Abreviatura": "HD",
+    "Significado": "hipótese diagnóstica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 286,
+    "Abreviatura": "HDA",
+    "Significado": "hemorragia digestiva alta",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 287,
+    "Abreviatura": "HDB",
+    "Significado": "hemorragia digestiva baixa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 288,
+    "Abreviatura": "HDL",
+    "Significado": "sigla em inglês para: lipoproteína de alta densidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 289,
+    "Abreviatura": "HE",
+    "Significado": "histórico de enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 290,
+    "Abreviatura": "HELLP",
+    "Significado": "sigla em inglês para hemólise, enzimas hepáticas elevadas e contagem baixa de plaquetas, quando se referindo à síndrome",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 291,
+    "Abreviatura": "HIC",
+    "Significado": "hipertensão intra craniana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 292,
+    "Abreviatura": "HIV",
+    "Significado": "sigla em inglês para: vírus da imunodeficiência humana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 293,
+    "Abreviatura": "HMC",
+    "Significado": "hemocultura",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 294,
+    "Abreviatura": "HMG",
+    "Significado": "hemograma",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 295,
+    "Abreviatura": "HP",
+    "Significado": "hipertensão pulmonar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 296,
+    "Abreviatura": "HPDA",
+    "Significado": "história pregressa da doença atual",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 297,
+    "Abreviatura": "HPMA",
+    "Significado": "história pregressa da moléstia atual",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 298,
+    "Abreviatura": "HSA",
+    "Significado": "hemorragia subaracnóidea",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 299,
+    "Abreviatura": "HSD",
+    "Significado": "hemorragia subdural",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 300,
+    "Abreviatura": "HT",
+    "Significado": "hematócrito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 301,
+    "Abreviatura": "HTD",
+    "Significado": "hemitórax direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 302,
+    "Abreviatura": "HTE",
+    "Significado": "hemitórax esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 303,
+    "Abreviatura": "HTX",
+    "Significado": "hemitórax",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 304,
+    "Abreviatura": "HVA",
+    "Significado": "hepatite por vírus A",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 305,
+    "Abreviatura": "HVB",
+    "Significado": "hepatite por vírus B",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 306,
+    "Abreviatura": "HVC",
+    "Significado": "hepatite por vírus C",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 307,
+    "Abreviatura": "HVD",
+    "Significado": "hepatite por vírus D",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 308,
+    "Abreviatura": "I",
+    "Significado": "iodo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 309,
+    "Abreviatura": "IA",
+    "Significado": "intra arterial",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 310,
+    "Abreviatura": "IAM",
+    "Significado": "Infarto agudo do miocárdio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 311,
+    "Abreviatura": "IAMCSST",
+    "Significado": "Infarto agudo do miocárdio com supra elevação de ST",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 312,
+    "Abreviatura": "IAMSST",
+    "Significado": "Infarto agudo do miocárdio sem supra elevação de ST",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 313,
+    "Abreviatura": "IC",
+    "Significado": "insuficiência cardíaca",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 314,
+    "Abreviatura": "ICC",
+    "Significado": "insuficiência cardíaca congestiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 315,
+    "Abreviatura": "ICD",
+    "Significado": "insuficiência cardíaca diastólica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 316,
+    "Abreviatura": "ICO",
+    "Significado": "insuficiência coronariana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 317,
+    "Abreviatura": "ID",
+    "Significado": "intradérmico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 318,
+    "Abreviatura": "IECA",
+    "Significado": "inibidor da enzima conversora da angiotensina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 319,
+    "Abreviatura": "Ig",
+    "Significado": "imunoglobulina. Admitido seguido das letras dos diversos tipos: IgG, IgA, IgM, IgD e IgE.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 320,
+    "Abreviatura": "IG",
+    "Significado": "idade gestacional",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 321,
+    "Abreviatura": "IM",
+    "Significado": "intramuscular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 322,
+    "Abreviatura": "IMAO",
+    "Significado": "inibidor da monoaminoxidase",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 323,
+    "Abreviatura": "IMC",
+    "Significado": "índice de massa corpórea",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 324,
+    "Abreviatura": "IML",
+    "Significado": "instituto médico legal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 325,
+    "Abreviatura": "IMV",
+    "Significado": "sigla em inglês para: ventilação mandatória intermitente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 326,
+    "Abreviatura": "INAL",
+    "Significado": "inalatória (o)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 327,
+    "Abreviatura": "IO",
+    "Significado": "intra óssea (o)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 328,
+    "Abreviatura": "IOT",
+    "Significado": "intubação orotraqueal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 329,
+    "Abreviatura": "IPAP",
+    "Significado": "sigla em inglês para: pressão positiva inspiratória nas vias aéreas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 330,
+    "Abreviatura": "ipm",
+    "Significado": "inspirações por minuto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 331,
+    "Abreviatura": "IRA",
+    "Significado": "insuficiência renal aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 332,
+    "Abreviatura": "IRC",
+    "Significado": "insuficiência renal crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 333,
+    "Abreviatura": "IRPA",
+    "Significado": "insuficiência respiratória aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 334,
+    "Abreviatura": "ITU",
+    "Significado": "infecção do trato urinário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 335,
+    "Abreviatura": "IV",
+    "Significado": "intravenoso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 336,
+    "Abreviatura": "IVAI",
+    "Significado": "infecção de vias aéreas inferiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 337,
+    "Abreviatura": "IVAS",
+    "Significado": "infecção das vias aéreas superiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 338,
+    "Abreviatura": "JEC",
+    "Significado": "junção escamo-colunar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 339,
+    "Abreviatura": "JJ",
+    "Significado": "jejum",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 340,
+    "Abreviatura": "K",
+    "Significado": "potássio. Também permitido K+",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 341,
+    "Abreviatura": "Kcal",
+    "Significado": "kilocaloria (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 342,
+    "Abreviatura": "KCl",
+    "Significado": "cloreto de potássio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 343,
+    "Abreviatura": "Kg",
+    "Significado": "quilograma (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 344,
+    "Abreviatura": "KPC",
+    "Significado": "bactéria Klebsiella Pneumoniae Carbapenemase",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 345,
+    "Abreviatura": "L",
+    "Significado": "litro (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 346,
+    "Abreviatura": "LA",
+    "Significado": "líquido amniótico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 347,
+    "Abreviatura": "LAB",
+    "Significado": "laboratório",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 348,
+    "Abreviatura": "LCR",
+    "Significado": "líquido cefaloraquidiano",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 349,
+    "Abreviatura": "LDL",
+    "Significado": "sigla em inglês para: lipoproteína de baixa densidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 350,
+    "Abreviatura": "LER",
+    "Significado": "lesão por esforços repetitivos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 351,
+    "Abreviatura": "LES",
+    "Significado": "lúpus eritematoso sistêmico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 352,
+    "Abreviatura": "LEUCO",
+    "Significado": "leucócitos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 353,
+    "Abreviatura": "LH",
+    "Significado": "Sigla em ingês para hormônio luteinizante",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 354,
+    "Abreviatura": "LLA",
+    "Significado": "leucemia linfóide aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 355,
+    "Abreviatura": "LLC",
+    "Significado": "leucemia linfóide crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 356,
+    "Abreviatura": "LM",
+    "Significado": "leite materno",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 357,
+    "Abreviatura": "LMA",
+    "Significado": "leucemia mielóide aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 358,
+    "Abreviatura": "LMC",
+    "Significado": "leucemia mielóide crônica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 359,
+    "Abreviatura": "LOTE",
+    "Significado": "lúcido e orientado temporoespacialmente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 360,
+    "Abreviatura": "LP",
+    "Significado": "Lesão por pressão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 361,
+    "Abreviatura": "m",
+    "Significado": "metro (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 362,
+    "Abreviatura": "M",
+    "Significado": "membro",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 363,
+    "Abreviatura": "m2",
+    "Significado": "metro quadrado",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 364,
+    "Abreviatura": "MASC",
+    "Significado": "masculino (gênero)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 365,
+    "Abreviatura": "MAT",
+    "Significado": "material",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 366,
+    "Abreviatura": "MAX",
+    "Significado": "máximo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 367,
+    "Abreviatura": "mcg",
+    "Significado": "micrograma(s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 368,
+    "Abreviatura": "mcg",
+    "Significado": "micrograma(s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 369,
+    "Abreviatura": "MCP",
+    "Significado": "miocardiopatia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 370,
+    "Abreviatura": "MCP",
+    "Significado": "miocardiopatia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 371,
+    "Abreviatura": "MDI",
+    "Significado": "marcapasso desfibrilador implantável. Também admitido como equivalente: CDI (cardiodesfibrilador implantável)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 372,
+    "Abreviatura": "MED",
+    "Significado": "medicamento (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 373,
+    "Abreviatura": "MEG",
+    "Significado": "mal estado geral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 374,
+    "Abreviatura": "mEq",
+    "Significado": "miliequivalente (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 375,
+    "Abreviatura": "META",
+    "Significado": "metástase",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 376,
+    "Abreviatura": "MF",
+    "Significado": "movimento fetal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 377,
+    "Abreviatura": "MFC",
+    "Significado": "Médico de Família e Comunidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 378,
+    "Abreviatura": "mg",
+    "Significado": "miligrama(s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 379,
+    "Abreviatura": "Mg",
+    "Significado": "magnésio, sendo também permitido: Mg++",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 380,
+    "Abreviatura": "mg/dL",
+    "Significado": "miligramas por decilitro",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 381,
+    "Abreviatura": "MI",
+    "Significado": "moléstias Infecciosas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 382,
+    "Abreviatura": "MID",
+    "Significado": "membro inferior direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 383,
+    "Abreviatura": "MIE",
+    "Significado": "membro inferior esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 384,
+    "Abreviatura": "MIN",
+    "Significado": "mínimo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 385,
+    "Abreviatura": "min",
+    "Significado": "minuto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 386,
+    "Abreviatura": "ML",
+    "Significado": "mililitro(s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 387,
+    "Abreviatura": "mm",
+    "Significado": "milímetro (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 388,
+    "Abreviatura": "MM",
+    "Significado": "membros",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 389,
+    "Abreviatura": "mmHg",
+    "Significado": "milímetro (s) de mercúrio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 390,
+    "Abreviatura": "MMII",
+    "Significado": "membros inferiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 391,
+    "Abreviatura": "MMSS",
+    "Significado": "membros superiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 392,
+    "Abreviatura": "MP",
+    "Significado": "marcapasso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 393,
+    "Abreviatura": "MPD",
+    "Significado": "marcapasso definitivo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 394,
+    "Abreviatura": "MPP",
+    "Significado": "má perfusão periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 395,
+    "Abreviatura": "MRM",
+    "Significado": "melhor resposta motora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 396,
+    "Abreviatura": "MRSA",
+    "Significado": "sigla em inglês para Staphylococcus Aureus resistente a meticilina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 397,
+    "Abreviatura": "MRV",
+    "Significado": "melhor resposta verbal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 398,
+    "Abreviatura": "MS",
+    "Significado": "Ministério da Saúde",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 399,
+    "Abreviatura": "MSD",
+    "Significado": "membro superior direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 400,
+    "Abreviatura": "MSE",
+    "Significado": "membro superior esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 401,
+    "Abreviatura": "Multi-R",
+    "Significado": "multirresistente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 402,
+    "Abreviatura": "MV",
+    "Significado": "murmúrio vesicular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 403,
+    "Abreviatura": "MVUA",
+    "Significado": "murmúrio vesicular universalmente audível",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 404,
+    "Abreviatura": "N",
+    "Significado": "não",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 405,
+    "Abreviatura": "N2",
+    "Significado": "nitrogênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 406,
+    "Abreviatura": "Na",
+    "Significado": "sódio, sendo também permitido: Na+",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 407,
+    "Abreviatura": null,
+    "Significado": "não se aplica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 408,
+    "Abreviatura": "Não-HDL",
+    "Significado": "Não - lipoproteína de alta densidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 409,
+    "Abreviatura": "NBZ",
+    "Significado": "nebulização",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 410,
+    "Abreviatura": "NDN",
+    "Significado": "nada digno de nota",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 411,
+    "Abreviatura": "NE",
+    "Significado": "nutrição enteral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 412,
+    "Abreviatura": "NEO",
+    "Significado": "neoplasia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 413,
+    "Abreviatura": "NEURO",
+    "Significado": "neurologia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 414,
+    "Abreviatura": "NL ou nl",
+    "Significado": "normal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 415,
+    "Abreviatura": "nº",
+    "Significado": "número",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 416,
+    "Abreviatura": "NP",
+    "Significado": "nutrição parenteral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 417,
+    "Abreviatura": "NPC",
+    "Significado": "nutrição parenteral central",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 418,
+    "Abreviatura": "NPH",
+    "Significado": "sigla em inglês para: insulina NPH",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 419,
+    "Abreviatura": "NPP",
+    "Significado": "nutrição parenteral periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 420,
+    "Abreviatura": "NPT",
+    "Significado": "nutrição parenteral total",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 421,
+    "Abreviatura": "NR",
+    "Significado": "Norma Regulamentar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 422,
+    "Abreviatura": "NSP",
+    "Significado": "Núcleo de Segurança do Paciente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 423,
+    "Abreviatura": "O2",
+    "Significado": "oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 424,
+    "Abreviatura": "OBS ou obs",
+    "Significado": "observação",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 425,
+    "Abreviatura": "oC",
+    "Significado": "graus celsius",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 426,
+    "Abreviatura": "OK",
+    "Significado": "permitido o uso com o significado de: estar bem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 427,
+    "Abreviatura": "OMA",
+    "Significado": "otite média aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 428,
+    "Abreviatura": "OMS",
+    "Significado": "Organização Mundial da Saúde",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 429,
+    "Abreviatura": "OPAS",
+    "Significado": "Organização Pan Americana de Saúde",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 430,
+    "Abreviatura": "OPME",
+    "Significado": "órteses, próteses e materiais especiais",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 431,
+    "Abreviatura": "ORO",
+    "Significado": "orofaringe",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 432,
+    "Abreviatura": "ORO",
+    "Significado": "orofaringe",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 433,
+    "Abreviatura": "ORTO",
+    "Significado": "ortopedia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 434,
+    "Abreviatura": "ORTO",
+    "Significado": "ortopedia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 435,
+    "Abreviatura": "Osm",
+    "Significado": "osmol ou osmolaridade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 436,
+    "Abreviatura": "Osm",
+    "Significado": "osmol ou osmolaridade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 437,
+    "Abreviatura": "OT",
+    "Significado": "orotraqueal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 438,
+    "Abreviatura": "OT",
+    "Significado": "orotraqueal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 439,
+    "Abreviatura": "OTO",
+    "Significado": "otoscopia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 440,
+    "Abreviatura": "OTO",
+    "Significado": "otoscopia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 441,
+    "Abreviatura": "OVACE",
+    "Significado": "Obstrução de vias aéreas por corpo estranho",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 442,
+    "Abreviatura": "OVACE",
+    "Significado": "Obstrução de vias aéreas por corpo estranho",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 443,
+    "Abreviatura": "OVAS",
+    "Significado": "obstrução de vias aéreas superiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 444,
+    "Abreviatura": "OVAS",
+    "Significado": "obstrução de vias aéreas superiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 445,
+    "Abreviatura": "P",
+    "Significado": "pulso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 446,
+    "Abreviatura": "P/ ou p/",
+    "Significado": "para",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 447,
+    "Abreviatura": "P/ ou p/",
+    "Significado": "para",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 448,
+    "Abreviatura": "PA",
+    "Significado": "pressão arterial",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 449,
+    "Abreviatura": "PA",
+    "Significado": "pressão arterial",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 450,
+    "Abreviatura": "PAAF",
+    "Significado": "punção aspirativa com agulha fina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 451,
+    "Abreviatura": "PAAF",
+    "Significado": "punção aspirativa com agulha fina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 452,
+    "Abreviatura": "PAC",
+    "Significado": "pneumonia adquirida na comunidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 453,
+    "Abreviatura": "PAC",
+    "Significado": "pneumonia adquirida na comunidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 454,
+    "Abreviatura": "PACO2",
+    "Significado": "pressão arterial de gás carbônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 455,
+    "Abreviatura": "PACO2",
+    "Significado": "pressão arterial de gás carbônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 456,
+    "Abreviatura": "PAD",
+    "Significado": "pressão arterial diastólica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 457,
+    "Abreviatura": "PAD",
+    "Significado": "pressão arterial diastólica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 458,
+    "Abreviatura": "PAF",
+    "Significado": "perfuração por arma de fogo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 459,
+    "Abreviatura": "PAF",
+    "Significado": "perfuração por arma de fogo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 460,
+    "Abreviatura": "PAI",
+    "Significado": "pressão arterial invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 461,
+    "Abreviatura": "PAI",
+    "Significado": "pressão arterial invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 462,
+    "Abreviatura": "PALS",
+    "Significado": "sigla em inglês para: Suporte Avançado de Vida em Pediatria",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 463,
+    "Abreviatura": "PALS",
+    "Significado": "sigla em inglês para: Suporte Avançado de Vida em Pediatria",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 464,
+    "Abreviatura": "PAM",
+    "Significado": "pressão arterial média",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 465,
+    "Abreviatura": "PAM",
+    "Significado": "pressão arterial média",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 466,
+    "Abreviatura": "PANI",
+    "Significado": "pressão arterial não invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 467,
+    "Abreviatura": "PANI",
+    "Significado": "pressão arterial não invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 468,
+    "Abreviatura": "PAO2",
+    "Significado": "pressão parcial de oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 469,
+    "Abreviatura": "PAO2",
+    "Significado": "pressão parcial de oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 470,
+    "Abreviatura": "PAS",
+    "Significado": "pressão arterial sistólica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 471,
+    "Abreviatura": "PAS",
+    "Significado": "pressão arterial sistólica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 472,
+    "Abreviatura": "PAV",
+    "Significado": "pneumonia associada à ventilação mecânica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 473,
+    "Abreviatura": "PAV",
+    "Significado": "pneumonia associada à ventilação mecânica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 474,
+    "Abreviatura": "PC",
+    "Significado": "perímetro cefálico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 475,
+    "Abreviatura": "PC",
+    "Significado": "perímetro cefálico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 476,
+    "Abreviatura": "PCA",
+    "Significado": "sigla em inglês para: analgesia controlada pelo paciente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 477,
+    "Abreviatura": "PCA",
+    "Significado": "sigla em inglês para: analgesia controlada pelo paciente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 478,
+    "Abreviatura": "PCO2",
+    "Significado": "pressão de gás carbônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 479,
+    "Abreviatura": "PCR",
+    "Significado": "parada cadiorrespiratória",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 480,
+    "Abreviatura": "PCReativa",
+    "Significado": "proteína C reativa. Quando referindo ao exame",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 481,
+    "Abreviatura": "PCST",
+    "Significado": "parto cesárea secção transversa",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 482,
+    "Abreviatura": "Pcte ou pcte",
+    "Significado": "paciente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 483,
+    "Abreviatura": "PEEP",
+    "Significado": "pressão positiva expiratória final",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 484,
+    "Abreviatura": "PEWS",
+    "Significado": "Pediatric early warning score (escore pediátrico de alerta precoce)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 485,
+    "Abreviatura": "PG",
+    "Significado": "prostraglandina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 486,
+    "Abreviatura": "pH",
+    "Significado": "potencial de hidrogênio iônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 487,
+    "Abreviatura": "PIC",
+    "Significado": "pressão intra craniana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 488,
+    "Abreviatura": "PICC",
+    "Significado": "cateter central de inserção periférica. Também admitido CCIP",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 489,
+    "Abreviatura": "PIFR",
+    "Significado": "Pupilas isocóricas e fotorreagentes",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 490,
+    "Abreviatura": "PIG",
+    "Significado": "pequeno para a idade gestacional",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 491,
+    "Abreviatura": "PIM",
+    "Significado": "pós infarto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 492,
+    "Abreviatura": "Pinsp",
+    "Significado": "pressão inspiratória",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 493,
+    "Abreviatura": "PLAQ",
+    "Significado": "plaquetas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 494,
+    "Abreviatura": "PM",
+    "Significado": "prescrição médica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 495,
+    "Abreviatura": "PMV",
+    "Significado": "para manter veia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 496,
+    "Abreviatura": "PNI",
+    "Significado": "pressão não invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 497,
+    "Abreviatura": "PNM",
+    "Significado": "pneumonia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 498,
+    "Abreviatura": "PO",
+    "Significado": "pós operatório",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 499,
+    "Abreviatura": "PO2",
+    "Significado": "pressão de oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 500,
+    "Abreviatura": "POI",
+    "Significado": "pós operatório imediato",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 501,
+    "Abreviatura": "POLITRAUMA",
+    "Significado": "politraumatismo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 502,
+    "Abreviatura": "POP",
+    "Significado": "procedimento operacional padrão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 503,
+    "Abreviatura": "POT",
+    "Significado": "pós operatório tardio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 504,
+    "Abreviatura": "PP",
+    "Significado": "perfusão periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 505,
+    "Abreviatura": "PPD",
+    "Significado": "sigla em inglês para: derivativa de proteína purificada. Teste tuberculínico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 506,
+    "Abreviatura": "PPF",
+    "Significado": "protoparasitológico de fezes",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 507,
+    "Abreviatura": "PPI",
+    "Significado": "pico de pressão inspiratória",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 508,
+    "Abreviatura": "PREOP",
+    "Significado": "pré operatório",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 509,
+    "Abreviatura": "PS",
+    "Significado": "pronto socorro",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 510,
+    "Abreviatura": "PSA",
+    "Significado": "sigla em inglês para: antígeno prostático específico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 511,
+    "Abreviatura": "PSAL",
+    "Significado": "antígeno prostático específico livre",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 512,
+    "Abreviatura": "PSAT",
+    "Significado": "antígeno prostático específico total",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 513,
+    "Abreviatura": "PSI",
+    "Significado": "pronto socorro infantil",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 514,
+    "Abreviatura": "PSOF",
+    "Significado": "pesquisa de sangue oculto nas fezes",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 515,
+    "Abreviatura": "PSV",
+    "Significado": "sigla em inglês para: ventilação com pressão de suporte",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 516,
+    "Abreviatura": "PT",
+    "Significado": "perímetro torácico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 517,
+    "Abreviatura": "PTQ",
+    "Significado": "petéquias",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 518,
+    "Abreviatura": "PV",
+    "Significado": "parto vaginal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 519,
+    "Abreviatura": "PVC",
+    "Significado": "pressão venosa central",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 520,
+    "Abreviatura": "PVCO2",
+    "Significado": "pressão venosa de gás carbônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 521,
+    "Abreviatura": "PVM",
+    "Significado": "prolapso da valva mitral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 522,
+    "Abreviatura": "PVO2",
+    "Significado": "pressão venosa de pxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 523,
+    "Abreviatura": "PVPI",
+    "Significado": "polivinil pirrolidona iodo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 524,
+    "Abreviatura": "QI",
+    "Significado": "quadrante inferior",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 525,
+    "Abreviatura": "QID",
+    "Significado": "quadrante inferior direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 526,
+    "Abreviatura": "QIE",
+    "Significado": "quadrante inferior esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 527,
+    "Abreviatura": "QP",
+    "Significado": "queixa principal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 528,
+    "Abreviatura": "QQII",
+    "Significado": "quadrantes inferiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 529,
+    "Abreviatura": "QQSS",
+    "Significado": "quadrantes superiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 530,
+    "Abreviatura": "QS",
+    "Significado": "quadrante superior",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 531,
+    "Abreviatura": "QSD",
+    "Significado": "quadrante superior direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 532,
+    "Abreviatura": "QSE",
+    "Significado": "quadrante superior esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 533,
+    "Abreviatura": "QT",
+    "Significado": "quimioterapia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 534,
+    "Abreviatura": "QTDE",
+    "Significado": "quantidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 535,
+    "Abreviatura": "RA",
+    "Significado": "ruídos adventícios",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 536,
+    "Abreviatura": "RADIO",
+    "Significado": "radioterapia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 537,
+    "Abreviatura": "RAM",
+    "Significado": "Reação adversa a medicamento",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 538,
+    "Abreviatura": "RC",
+    "Significado": "rebordo costal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 539,
+    "Abreviatura": "RCD",
+    "Significado": "rebordo costal direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 540,
+    "Abreviatura": "RCE",
+    "Significado": "rebordo costal esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 541,
+    "Abreviatura": "RCI",
+    "Significado": "ritmo cardíaco irregular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 542,
+    "Abreviatura": "RCIU",
+    "Significado": "restrição de crescimento intra uterino",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 543,
+    "Abreviatura": "RCOP",
+    "Significado": "Registro Clínico Orientado por Problemas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 544,
+    "Abreviatura": "RCP",
+    "Significado": "ressuscitação cardio pulmonar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 545,
+    "Abreviatura": "RCR",
+    "Significado": "ritmo cardíaco regular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 546,
+    "Abreviatura": "RDT",
+    "Significado": "radioterapia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 547,
+    "Abreviatura": "REG",
+    "Significado": "regular estado geral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 548,
+    "Abreviatura": "RFE",
+    "Significado": "retração de fúrcula esternal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 549,
+    "Abreviatura": "RFM",
+    "Significado": "reflexo fotomotor",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 550,
+    "Abreviatura": "RH",
+    "Significado": "restrição hídrica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 551,
+    "Abreviatura": "RHA",
+    "Significado": "ruídos hidroaéreos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 552,
+    "Abreviatura": "RI",
+    "Significado": "ritmo irregular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 553,
+    "Abreviatura": "RL",
+    "Significado": "ringer lactato",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 554,
+    "Abreviatura": "RM",
+    "Significado": "resposta motora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 555,
+    "Abreviatura": "RN",
+    "Significado": "recém nascido",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 556,
+    "Abreviatura": "RNC",
+    "Significado": "rebaixamento do nível de consciência",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 557,
+    "Abreviatura": "RNM",
+    "Significado": "ressonância nuclear magnética",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 558,
+    "Abreviatura": "RNPO",
+    "Significado": "recém nascido pós- termo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 559,
+    "Abreviatura": "RNPT",
+    "Significado": "recém nascido pré-termo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 560,
+    "Abreviatura": "RNT",
+    "Significado": "recém nascido de termo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 561,
+    "Abreviatura": "RPA",
+    "Significado": "recuperação pós anestésica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 562,
+    "Abreviatura": "rpm",
+    "Significado": "respirações por minuto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 563,
+    "Abreviatura": "RPM",
+    "Significado": "ruptura prematura de membrana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 564,
+    "Abreviatura": "RPP",
+    "Significado": "regular perfusão periférica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 565,
+    "Abreviatura": "RR",
+    "Significado": "ritmo regular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 566,
+    "Abreviatura": "RS",
+    "Significado": "ritmo sinusal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 567,
+    "Abreviatura": "RSD",
+    "Significado": "retração subdiafragmática",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 568,
+    "Abreviatura": "RT",
+    "Significado": "responsável técnico (a)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 569,
+    "Abreviatura": "RV",
+    "Significado": "resposta verbal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 570,
+    "Abreviatura": "RVF",
+    "Significado": "retroversoflexão",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 571,
+    "Abreviatura": "RVM",
+    "Significado": "revascularização miocárdica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 572,
+    "Abreviatura": "RX",
+    "Significado": "raio x",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 573,
+    "Abreviatura": "S",
+    "Significado": "sim",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 574,
+    "Abreviatura": "S/ ou s/",
+    "Significado": "sem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 575,
+    "Abreviatura": "S/N ou SN",
+    "Significado": "se necessário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 576,
+    "Abreviatura": "SADT",
+    "Significado": "Serviço Auxiliar de Diagnóstico e Terapia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 577,
+    "Abreviatura": "SAE",
+    "Significado": "sistematização da assistência de enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 578,
+    "Abreviatura": "Sal. ou sal.",
+    "Significado": "salinizado",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 579,
+    "Abreviatura": "SAMEB",
+    "Significado": "Serviço de Assistência Médica de Barueri",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 580,
+    "Abreviatura": "SAMU",
+    "Significado": "Serviço de Atendimento Móvel de Urgência",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 581,
+    "Abreviatura": "SARA",
+    "Significado": "síndrome da angústia respiratória do adulto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 582,
+    "Abreviatura": "Sat ou SAT",
+    "Significado": "saturação",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 583,
+    "Abreviatura": "Sat.O2 ou SAT.O2",
+    "Significado": "saturação de oxigênio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 584,
+    "Abreviatura": "SAV",
+    "Significado": "suporte avançado de vida",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 585,
+    "Abreviatura": "SBV",
+    "Significado": "suporte básico de vida",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 586,
+    "Abreviatura": "SC",
+    "Significado": "subcutâneo (a)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 587,
+    "Abreviatura": "SCA",
+    "Significado": "síndrome coranariana aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 588,
+    "Abreviatura": "SCD",
+    "Significado": "subclávia direita",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 589,
+    "Abreviatura": "SCE",
+    "Significado": "subclávia esquerda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 590,
+    "Abreviatura": "SCIH",
+    "Significado": "Serviço de Controle de Infecção Hospitalar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 591,
+    "Abreviatura": "SD",
+    "Significado": "síndrome",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 592,
+    "Abreviatura": "SDMO",
+    "Significado": "síndrome de disfunção de múltiplos órgãos",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 593,
+    "Abreviatura": "SDRA",
+    "Significado": "síndrome do desconforto respiratório agudo. Também permitido SARA para síndrome da angústia respiratória aguda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 594,
+    "Abreviatura": "SE",
+    "Significado": "sonda enteral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 595,
+    "Abreviatura": "Sem ou SEM",
+    "Significado": "semana (s)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 596,
+    "Abreviatura": "SESMT",
+    "Significado": "Serviço Especializado em Engenharia de Segurança e em Medicina do Trabalho",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 597,
+    "Abreviatura": "SF",
+    "Significado": "soro fisiológico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 598,
+    "Abreviatura": "SFA",
+    "Significado": "sofrimento fetal agudo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 599,
+    "Abreviatura": "SFC",
+    "Significado": "sofrimento fetal crônico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 600,
+    "Abreviatura": "SG",
+    "Significado": "soro glicosado",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 601,
+    "Abreviatura": "SGF",
+    "Significado": "soro glicofisiológico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 602,
+    "Abreviatura": "SHAM",
+    "Significado": "Santa Helena Assistência Médica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 603,
+    "Abreviatura": "SIAD",
+    "Significado": "Suporte integrado ao paciente com alta dependência",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 604,
+    "Abreviatura": "SIC",
+    "Significado": "segundo informações colhidas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 605,
+    "Abreviatura": "SIDA",
+    "Significado": "síndrome da imunodeficiência adquirida. Também admitido como equivalente: AIDS",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 606,
+    "Abreviatura": "SIMV",
+    "Significado": "sigla em inglês para: ventilação mandatória intermitente sincronizada",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 607,
+    "Abreviatura": "SL",
+    "Significado": "sublingual",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 608,
+    "Abreviatura": "SNC",
+    "Significado": "sistema nervoso central",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 609,
+    "Abreviatura": "SNE",
+    "Significado": "sonda nasoenteral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 610,
+    "Abreviatura": "SNG",
+    "Significado": "sonda nasogástrica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 611,
+    "Abreviatura": "SOAP",
+    "Significado": "subjetivo, objetivo, avaliação e plano",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 612,
+    "Abreviatura": "SOG",
+    "Significado": "sonda orogástrica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 613,
+    "Abreviatura": "SPO2 ou SpO2",
+    "Significado": "saturação de pulso de oxigênio, saturação de oxigênio pela oximetria digital",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 614,
+    "Abreviatura": "Sr.",
+    "Significado": "senhor",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 615,
+    "Abreviatura": "Sra.",
+    "Significado": "senhora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 616,
+    "Abreviatura": "SRAG",
+    "Significado": "Síndrome respiratória aguda grave",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 617,
+    "Abreviatura": "SRIS",
+    "Significado": "sigla em inglês para: síndrome da resposta Inflamatória sistêmica. Também permitido: SIRS.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 618,
+    "Abreviatura": "SRL",
+    "Significado": "solução de ringer lactato",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 619,
+    "Abreviatura": "SRS",
+    "Significado": "solução de ringer simples",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 620,
+    "Abreviatura": "SS",
+    "Significado": "sopro sistólico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 621,
+    "Abreviatura": "SSST",
+    "Significado": "sem supradesnivelamento do segmento ST. Também aceito: sem supra de ST",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 622,
+    "Abreviatura": "SST",
+    "Significado": "supradesnivelamento do segmento ST. Também aceito supra ST",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 623,
+    "Abreviatura": "SSVV",
+    "Significado": "sinais vitais",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 624,
+    "Abreviatura": "SUS",
+    "Significado": "Sistema Único de Saúde",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 625,
+    "Abreviatura": "SV",
+    "Significado": "sonda vesical",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 626,
+    "Abreviatura": "SVA",
+    "Significado": "sonda vesical de alívio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 627,
+    "Abreviatura": "SVD",
+    "Significado": "sonda vesical de demora",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 628,
+    "Abreviatura": "SVO2",
+    "Significado": "saturação venosa de oxigênio. Usualmente admitido para saturação venosa central ou venosa mista",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 629,
+    "Abreviatura": "T",
+    "Significado": "temperatura",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 630,
+    "Abreviatura": "T3",
+    "Significado": "triiodotironina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 631,
+    "Abreviatura": "T4",
+    "Significado": "tetraiodotironina ou tiroxina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 632,
+    "Abreviatura": "TAV",
+    "Significado": "tranqueobronquite associada à ventilação mecânica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 633,
+    "Abreviatura": "TB",
+    "Significado": "tuberculose",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 634,
+    "Abreviatura": "TBG",
+    "Significado": "tabagista",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 635,
+    "Abreviatura": "TC ou CT",
+    "Significado": "tomografia computadorizada",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 636,
+    "Abreviatura": "TCE",
+    "Significado": "traumatismo crânio-encefálico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 637,
+    "Abreviatura": "TD",
+    "Significado": "transdérmico",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 638,
+    "Abreviatura": "TEC",
+    "Significado": "tempo de enchimento capilar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 639,
+    "Abreviatura": "Téc.Enf.",
+    "Significado": "técnico (a) de enfermagem",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 640,
+    "Abreviatura": "TEP",
+    "Significado": "tromboembolismo pulmonar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 641,
+    "Abreviatura": "TEV",
+    "Significado": "tromboembolismo venoso",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 642,
+    "Abreviatura": "TGI",
+    "Significado": "trato gastrointestinal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 643,
+    "Abreviatura": "TGL",
+    "Significado": "triglicérides",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 644,
+    "Abreviatura": "TGO",
+    "Significado": "transaminase oxaloacética. Também permitido: AST (aspartato transaminase)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 645,
+    "Abreviatura": "TGP",
+    "Significado": "transaminase pirúvica. Também permitido: ALT (alanina transaminase)",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 646,
+    "Abreviatura": "TGU",
+    "Significado": "Trato genitourinário",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 647,
+    "Abreviatura": "TIC",
+    "Significado": "tiragem intercostal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 648,
+    "Abreviatura": "TISS",
+    "Significado": "Troca de Informação em Saúde Suplementar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 649,
+    "Abreviatura": "TMO",
+    "Significado": "transplante de medula óssea",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 650,
+    "Abreviatura": "TP",
+    "Significado": "trabalho de parto",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 651,
+    "Abreviatura": "TPP",
+    "Significado": "trabalho de parto prematuro",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 652,
+    "Abreviatura": "TPSV",
+    "Significado": "taquicardia paroxística supraventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 653,
+    "Abreviatura": "TQ",
+    "Significado": "traquéia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 654,
+    "Abreviatura": "TQT",
+    "Significado": "traqueostomia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 655,
+    "Abreviatura": "TR",
+    "Significado": "toque retal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 656,
+    "Abreviatura": "TR",
+    "Significado": "terapia aprovada em UME",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 657,
+    "Abreviatura": "TRM",
+    "Significado": "trauma raquimedular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 658,
+    "Abreviatura": "TRO",
+    "Significado": "terapia de reidratação oral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 659,
+    "Abreviatura": "TROPO",
+    "Significado": "troponina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 660,
+    "Abreviatura": "TS",
+    "Significado": "tempo de sangramento",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 661,
+    "Abreviatura": "TSH",
+    "Significado": "Sigla em inglês para: hormônio tireoestimulante. Preferível em lugar do equivalente em português: HTE, devido ao amplo uso.",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 662,
+    "Abreviatura": "TSVP",
+    "Significado": "taquicardia supra ventricular paroxística",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 663,
+    "Abreviatura": "TT",
+    "Significado": "tempo de tromboplastina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 664,
+    "Abreviatura": "TTGO",
+    "Significado": "teste tolerância à glicose oral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 665,
+    "Abreviatura": "TTO",
+    "Significado": "tratamento",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 666,
+    "Abreviatura": "TTPA",
+    "Significado": "tempo de tromboplastina parcial ativada",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 667,
+    "Abreviatura": "TU",
+    "Significado": "tumor",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 668,
+    "Abreviatura": "TUSS",
+    "Significado": "Terminologia Unificada de Saúde Suplementar",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 669,
+    "Abreviatura": "TV",
+    "Significado": "taquicardia ventricular",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 670,
+    "Abreviatura": "TVNS",
+    "Significado": "taquicardia ventricular não sustentada",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 671,
+    "Abreviatura": "TVP",
+    "Significado": "trombose venosa profunda",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 672,
+    "Abreviatura": "TX",
+    "Significado": "transplante",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 673,
+    "Abreviatura": "UCO",
+    "Significado": "unidade coronariana",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 674,
+    "Abreviatura": "UI",
+    "Significado": "unidade de internação",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 675,
+    "Abreviatura": "UME",
+    "Significado": "Unidade de medicamentos especiais",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 676,
+    "Abreviatura": "Ur",
+    "Significado": "uréia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 677,
+    "Abreviatura": "URC",
+    "Significado": "urocultura",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 678,
+    "Abreviatura": "USG",
+    "Significado": "ultrassonografia. Válido também US",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 679,
+    "Abreviatura": "USGTV",
+    "Significado": "Ultrassonografia transvaginal. Válido também USTV",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 680,
+    "Abreviatura": "UTI",
+    "Significado": "unidade de terapia intensiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 681,
+    "Abreviatura": "VA",
+    "Significado": "vias aéreas",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 682,
+    "Abreviatura": "VAS",
+    "Significado": "vias aéreas superiores",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 683,
+    "Abreviatura": "VC",
+    "Significado": "volume corrente",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 684,
+    "Abreviatura": "VCM",
+    "Significado": "volume corpuscular médio",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 685,
+    "Abreviatura": "VD",
+    "Significado": "ventrículo direito",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 686,
+    "Abreviatura": "VE",
+    "Significado": "ventrículo esquerdo",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 687,
+    "Abreviatura": "VESP ou Vesp",
+    "Significado": "ventilação espontânea",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 688,
+    "Abreviatura": "VG",
+    "Significado": "via gástrica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 689,
+    "Abreviatura": "VHS",
+    "Significado": "velocidade de hemossedimentação",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 690,
+    "Abreviatura": "VI",
+    "Significado": "via inalatória",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 691,
+    "Abreviatura": "VIT ou Vit",
+    "Significado": "vitamina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 692,
+    "Abreviatura": "VLDL",
+    "Significado": "Sigla em inglês para: lipoproteína de muito baixa densidade",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 693,
+    "Abreviatura": "VLP",
+    "Significado": "videolaparoscopia",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 694,
+    "Abreviatura": "VM",
+    "Significado": "ventilação mecânica",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 695,
+    "Abreviatura": "VMG",
+    "Significado": "visceromegalias",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 696,
+    "Abreviatura": "VMI",
+    "Significado": "ventilação mecânica invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 697,
+    "Abreviatura": "VMNI",
+    "Significado": "ventilação mecânica não invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 698,
+    "Abreviatura": "VN",
+    "Significado": "via nasal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 699,
+    "Abreviatura": "VNI",
+    "Significado": "ventilação não invasiva",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 700,
+    "Abreviatura": "VO",
+    "Significado": "via oral",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 701,
+    "Abreviatura": "VOL",
+    "Significado": "volume",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 702,
+    "Abreviatura": "VR",
+    "Significado": "via retal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 703,
+    "Abreviatura": "VRE",
+    "Significado": "Enterococcus spp resistentes à vancomicina",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 704,
+    "Abreviatura": "VSR",
+    "Significado": "Vírus sincicial respiratório",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 705,
+    "Abreviatura": "VT",
+    "Significado": "via traqueal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 706,
+    "Abreviatura": "VTR",
+    "Significado": "viatura",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 707,
+    "Abreviatura": "VV",
+    "Significado": "via vaginal",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 708,
+    "Abreviatura": "WONCA",
+    "Significado": "Organização Mundial de Médicos de Família",
+    "Desativado": 0,
+    "Permitida": 1
+  },
+  {
+    "idSiglario": 709,
+    "Abreviatura": "XP",
+    "Significado": "xarope",
+    "Desativado": 0,
+    "Permitida": 1
+  }
+]

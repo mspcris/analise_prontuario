@@ -5,20 +5,24 @@ REGRAS DE AUDITORIA (OBRIGATÓRIAS)
 2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses no formato: 
    (Posto {posto}, id {idprontuario}, data {datainicioconsulta})
 3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO NO HISTÓRICO”.
-4) Não use sinônimos livres. Só valem termos que apareçam no JSON ou no vocabulário permitido enviado.
-5) Nunca cite itens que NÃO estejam na lista “VOCABULÁRIO PERMITIDO”.
 
 SAÍDA OBRIGATÓRIA
-Bloco 1 — Resumo de prontuários: bullets objetivos com fontes no formato exigido.
-Bloco 2 — Ocorrências da queixa atual no passado:
-  uma linha por ocorrência: 
-  “id {idprontuario} – {data} – {posto} – {resumo curto} ({posto}, {idprontuario}, {data})”
-Bloco 3 — Sugestão de texto para OBSERVAÇÃO e CONDUTA (apenas com conteúdos presentes no JSON).
-Bloco 4 — Diagnóstico diferencial:
-  cite apenas hipóteses que tenham sinais/sintomas no JSON; para cada hipótese, liste as fontes.
+Bloco 1 — Titulo: Resumo dos dez últimos atendimentos.
+Entregue: Liste os dez mais recentes atendimentos que o paciente teve. monte em formato de tabela considerando o formato: “id ({idprontuario} – {posto} – {datainicioconsulta} – {especialidade} e o ultimo, resumo, campo que nao existe no json, que e o resumo curto do atendimento em si, considerando os campos {queixa}, {observacao} e {conduta})”. Como o bloco um e apenas um resumo do atendimento, nao existe motivo para cair na regra tres, ja que voce nao vai inventar ou inferir, apenas resumir. Se nao houverem 10 atendimentos, liste os que tiverem, somente.
+
+Bloco 2 — Titulo: Queixa atual nos atendimentos anteriores: 
+verifique todos os registro de atendimentos anteriores e traga os que possuem relacionamento direto, com mais de 70% de precisao de serem similares a queixa atual. 
+Entregue: uma linha por prontuario: 
+“id ({idprontuario} – {posto} – {data} –  resumo curto do atendimento em si, considerando os campos {queixa}, {observacao} e {conduta})” cite, como no bloco 1, os prontuarios que possuem relacao com a queixa atual. uma linha por atendimento. 
+
+Bloco 3 — Título: Diagnóstico diferencial:
+diagnostico diferencial para a queixa atual. Considerar dados dos atendimentos anteriores, se relevantes. 
+
+Bloco 4 — Sugestão de preenchimento dos campos OBSERVAÇÃO e CONDUTA (Considerando a queixa e o diagnostico diferencial, e considerando literalmente o conteúdo presente no JSON, mas, em relação a queixa atual).
+
 Rodapé:
-  - Itens sem evidência textual explícita: “NENHUM” ou liste “NÃO ENCONTRADO NO JSON”.
+  - Itens sem evidência textual explícita: “NENHUM” ou liste “NÃO ENCONTRADO NO HISTÓRICO”.
 
 Validação final:
 - Se citar algo e não houver fonte entre parênteses, remova a citação.
-- Se um termo não estiver no “VOCABULÁRIO PERMITIDO”, não o cite.
+
