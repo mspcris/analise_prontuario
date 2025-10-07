@@ -1,39 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-project.py
-Objetivo: Buscar prontu?rios em m?ltiplos bancos (por "posto"), usando SQLs externos
-salvos em ./sql/<POSTO>.sql, aplicar filtros case/acento-insens?veis, consolidar resultados,
-persistir um JSON em ./json e enviar TODO o conte?do relevante para a Groq em CHUNKS,
-excluindo somente registros onde queixa e conduta s?o ambos nulos/vazios.
-Ao final, perguntar se deve apagar o JSON.
+project.py — CLI para buscar prontuários em múltiplos bancos (por “posto”),
+gerar JSON completo e opcionalmente enviar a análise para a Groq em chunks.
 
 Requisitos:
-  pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv groq
-  ODBC Driver 17/18 for SQL Server instalado no Windows
+  pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv groq requests
 
-Configura??o:
-  Vari?veis de ambiente no .env (na raiz do projeto), ex.:
-    DB_HOST_A, DB_PORT_A, DB_BASE_A, DB_USER_A, DB_PASSWORD_A
-    DB_ENCRYPT=yes|no, DB_TRUST_CERT=yes|no, DB_TIMEOUT=5
-    GROQ_API_KEY=<sua chave>
-    PROMPT_PATH=prompts/prompt_analise_atds_anteriores.txt  (opcional)
-    GROQ_CONFIG=groq_modelos/gpt120b.txt                    (opcional)
-
-Observa??o:
-  O arquivo groq_modelos/gpt120b.txt ? um INI com se??es [groq] e [processing].
+Config (.env na raiz):
+  DB_HOST_A, DB_PORT_A, DB_BASE_A, DB_USER_A, DB_PASSWORD_A
+  # repita para B, C, D, G, I, J, M conforme necessário
+  DB_ENCRYPT=yes|no
+  DB_TRUST_CERT=yes|no
+  DB_TIMEOUT=5
+  GROQ_API_KEY=YOUR_KEY_HERE
+  OPENAI_API_KEY=
+  PROMPT_PATH=prompts/prompt_analise_atds_anteriores.txt
+  GROQ_CONFIG=groq_modelos/gpt120b.txt
+  PROMPT_ENCODING=utf-8
 """
 
 # =========================
 # IMPORTS E CAMINHOS
 # =========================
 import os
+import re
 import json
 import uuid
 import time
-import re
+import argparse
 from datetime import datetime
 from urllib.parse import quote_plus
-from typing import List, Tuple, Iterable
+from typing import List, Tuple, Iterable, Optional, Literal
 
 import numpy as np
 import pandas as pd
@@ -41,20 +38,21 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from configparser import ConfigParser
 
-# Diret?rios base do projeto, SQLs e JSONs
+# carregamento do .env logo no início
 BASE_DIR = os.path.dirname(__file__)
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
 SQL_DIR = os.path.join(BASE_DIR, "sql")
 JSON_DIR = os.path.join(BASE_DIR, "json")
 PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
 DEFAULT_PROMPT_PATH = os.path.join(PROMPTS_DIR, "prompt_analise_atds_anteriores.txt")
 DEFAULT_GROQ_CONFIG = os.path.join(BASE_DIR, "groq_modelos", "gpt120b.txt")
 
-# Carrega vari?veis do .env
-load_dotenv(os.path.join(BASE_DIR, ".env"))
-
+# postos suportados; ajuste conforme seu ambiente
+POSTOS = ["A", "N", "X", "Y", "B", "R",  "P", "C", "D", "G", "I", "J", "M"]
 
 # =========================
-# FUN??ES DE SUPORTE
+# UTIL
 # =========================
 def ensure_dirs():
     os.makedirs(SQL_DIR, exist_ok=True)
@@ -67,10 +65,9 @@ def _env(key: str, default: str = "") -> str:
     return v.strip() if isinstance(v, str) else v
 
 
-# Postos suportados. Edite conforme seu ambiente real.
-POSTOS = ["A", "B", "C", "D", "G", "I", "J", "M"]
-
-
+# =========================
+# CONEXÃO COM BANCOS
+# =========================
 def build_conn_str(
     host: str,
     base: str,
@@ -83,15 +80,14 @@ def build_conn_str(
 ) -> str:
     server = f"tcp:{host},{port or '1433'}"
     common = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
+        "DRIVER={ODBC Driver 17 for SQL Server};"
         f"SERVER={server};DATABASE={base};"
         f"Encrypt={encrypt};TrustServerCertificate={trust_cert};"
         f"Connection Timeout={timeout or '5'}"
     )
     if user:
         return f"{common};UID={user};PWD={pwd}"
-    else:
-        return f"{common};Trusted_Connection=yes"
+    return f"{common};Trusted_Connection=yes"
 
 
 def build_conns_from_env():
@@ -112,10 +108,6 @@ def build_conns_from_env():
     return conns
 
 
-# Conex?es lidas do .env (chave = posto, valor = connection string)
-CONNS = build_conns_from_env()
-
-
 def make_engine(odbc_conn_str: str):
     return create_engine(
         f"mssql+pyodbc:///?odbc_connect={quote_plus(odbc_conn_str)}",
@@ -124,15 +116,17 @@ def make_engine(odbc_conn_str: str):
 
 
 def load_sql_for_posto(posto: str) -> str:
+    """
+    Lê ./sql/<POSTO>.sql; se não existir, retorna um SELECT mínimo.
+    Remova ; final do arquivo se existir.
+    """
     path = os.path.join(SQL_DIR, f"{posto}.sql")
     if os.path.isfile(path):
         with open(path, "r", encoding="utf-8") as f:
             sql = f.read().strip()
-        if sql.endswith(";"):
-            sql = sql[:-1]
-        return sql
+        return sql[:-1] if sql.endswith(";") else sql
 
-    # Fallback m?nimo; ajuste conforme suas colunas reais
+    # fallback mínimo — ajuste colunas conforme seu schema
     return (
         "SELECT "
         "p.idprontuario, p.idcliente, p.iddependente, p.matricula, p.idendereco, "
@@ -147,6 +141,9 @@ def load_sql_for_posto(posto: str) -> str:
 
 
 def wrap_with_filters(base_sql: str, use_like: bool) -> text:
+    """
+    Filtro acento/case-insensível em nome + data exata.
+    """
     if use_like:
         where_clause = (
             "WHERE LTRIM(RTRIM(q.paciente)) COLLATE SQL_Latin1_General_CP1_CI_AI "
@@ -181,9 +178,12 @@ def query_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date, use_li
         return pd.DataFrame()
 
 
+# =========================
+# JSON E SANITIZAÇÃO
+# =========================
 def sanitize_for_json(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Converte datetimes p/ ISO e NaN p/ None.
+    Converte datetimes para ISO e NaN para None.
     """
     df2 = df.copy()
     for col in df2.columns:
@@ -203,7 +203,9 @@ def save_json(payload: dict) -> str:
     return path
 
 
-# ---------- Prompt loader ----------
+# =========================
+# PROMPT E CONFIG DA GROQ
+# =========================
 def _read_text_auto(file_path: str) -> tuple[str, str]:
     if not os.path.isfile(file_path):
         raise FileNotFoundError(file_path)
@@ -226,7 +228,7 @@ def _read_text_auto(file_path: str) -> tuple[str, str]:
 def _load_prompt_file(prompt_path: str) -> tuple[str, str]:
     candidates = [
         prompt_path,
-        os.path.join(os.path.dirname(__file__), "prompts", "prompt_analise_atds_anteriores.txt"),
+        os.path.join(BASE_DIR, "prompts", "prompt_analise_atds_anteriores.txt"),
         os.path.join(os.getcwd(), "prompts", "prompt_analise_atds_anteriores.txt"),
         os.getenv("PROMPT_PATH", "").strip(),
     ]
@@ -238,26 +240,23 @@ def _load_prompt_file(prompt_path: str) -> tuple[str, str]:
             content = content.strip()
             from hashlib import sha256
             sha = sha256(content.encode("utf-8")).hexdigest()
-            print(f"[Groq] System prompt carregado: {ap} (encoding={enc}, sha256={sha[:12]}...)")
+            print(f"[Groq] System prompt: {ap} (encoding={enc}, sha256={sha[:12]}...)")
             return content, sha
         except Exception as e:
             tried.append(f"falha em {ap}: {e}")
-    print("[Groq] Falha ao localizar/abrir prompt. Tentativas: " + " | ".join(tried))
+    print("[Groq] Falha ao carregar prompt. Tentativas: " + " | ".join(tried))
     return "", ""
 
 
-# ---------- Config reader robusto para groq_modelos/gpt120b.txt ----------
 def _read_groq_config(path: str) -> tuple[dict, dict]:
     """
-    L? INI com toler?ncia a:
-      - coment?rios inline (# ou ;)
-      - lista multilinha em processing.fields_keep = [ ... ]
-    Retorna (cfg_groq, cfg_processing) normalizados.
+    Lê INI tolerante a comentários e lista multilinha em processing.fields_keep.
+    Retorna (cfg_groq, cfg_processing).
     """
     if not path or not os.path.isfile(path):
         path = DEFAULT_GROQ_CONFIG
 
-    # 1) L? texto cru
+    # 1) lê bruto
     encodings = ["utf-8", "utf-8-sig", "cp1252", "latin-1"]
     last_err = None
     raw = None
@@ -269,17 +268,17 @@ def _read_groq_config(path: str) -> tuple[dict, dict]:
         except Exception as e:
             last_err = e
     if raw is None:
-        raise last_err if last_err else RuntimeError("Falha ao ler configura??o GROQ.")
+        raise last_err if last_err else RuntimeError("Falha ao ler configuração GROQ.")
 
-    # 2) Normaliza e remove BOM
+    # 2) normaliza
     text_norm = raw.replace("\r\n", "\n").replace("\r", "\n").lstrip("\ufeff")
 
-    # 3) Achata fields_keep multiline ? JSON em uma linha
+    # 3) achata fields_keep multiline para JSON em uma linha
     fields_json_list = []
+
     def _flatten_fields_keep(match: re.Match) -> str:
         inner = match.group(1)
         payload = "[" + inner + "]"
-        # remove coment?rios inline
         lines = []
         for line in payload.split("\n"):
             line = re.split(r"\s[#;].*$", line)[0]
@@ -290,7 +289,6 @@ def _read_groq_config(path: str) -> tuple[dict, dict]:
         try:
             parsed = _json.loads(one_line)
         except Exception:
-            # remove trailing comma antes de ]
             one_line = re.sub(r",\s*\]", "]", one_line)
             parsed = _json.loads(one_line)
         fields_json_list.clear()
@@ -304,14 +302,14 @@ def _read_groq_config(path: str) -> tuple[dict, dict]:
         flags=re.DOTALL | re.IGNORECASE,
     )
 
-    # 4) Parse com coment?rios inline
+    # 4) parse com comentários inline
     parser = ConfigParser(inline_comment_prefixes=("#", ";"))
     parser.read_string(text_norm)
 
     groq = dict(parser.items("groq")) if parser.has_section("groq") else {}
     processing = dict(parser.items("processing")) if parser.has_section("processing") else {}
 
-    # Normaliza??es
+    # normalizações
     groq["model"] = groq.get("model", "").strip().strip('"').strip("'")
     groq["temperature"] = float(groq.get("temperature", "0"))
     groq["top_p"] = float(groq.get("top_p", "1"))
@@ -328,19 +326,17 @@ def _read_groq_config(path: str) -> tuple[dict, dict]:
     processing["sleep_between_calls"] = float(processing.get("sleep_between_calls", "0.8"))
     processing["max_retries"] = int(processing.get("max_retries", "3"))
     processing["retry_backoff"] = float(processing.get("retry_backoff", "2.0"))
-    # fields_keep vira lista python
-    if fields_json_list:
-        processing["fields_keep"] = fields_json_list
-    else:
-        try:
-            processing["fields_keep"] = json.loads(processing.get("fields_keep", "[]"))
-        except Exception:
-            processing["fields_keep"] = []
+    try:
+        processing["fields_keep"] = json.loads(processing.get("fields_keep", "[]"))
+    except Exception:
+        processing["fields_keep"] = []
 
     return groq, processing
 
 
-# ---------- Filtro para envio ----------
+# =========================
+# FILTRO E CHUNKING
+# =========================
 def _is_blank_series(s: pd.Series) -> pd.Series:
     if s is None:
         return pd.Series([True] * 0)
@@ -349,8 +345,7 @@ def _is_blank_series(s: pd.Series) -> pd.Series:
 
 def _filter_with_content(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Mant?m linhas em que pelo menos um entre 'queixa' e 'conduta' possui conte?do.
-    Descarta quando ambos vazios/nulos.
+    Mantém linhas onde pelo menos um entre 'queixa' e 'conduta' possui conteúdo.
     """
     q_blank = _is_blank_series(df.get("queixa", pd.Series([None] * len(df))))
     c_blank = _is_blank_series(df.get("conduta", pd.Series([None] * len(df))))
@@ -358,7 +353,6 @@ def _filter_with_content(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[keep].reset_index(drop=True)
 
 
-# ---------- Chunking + chamada Groq ----------
 def _iter_chunks(records: List[dict], size: int) -> Iterable[Tuple[int, int, List[dict]]]:
     total = len(records)
     if total == 0:
@@ -368,7 +362,10 @@ def _iter_chunks(records: List[dict], size: int) -> Iterable[Tuple[int, int, Lis
         yield (i // size) + 1, n_parts, records[i: i + size]
 
 
-def _call_groq(client, model, messages, temperature, top_p, max_tokens, stop=None, reasoning_effort=""):
+# =========================
+# CHAMADA À GROQ
+# =========================
+def _call_groq(client, model, messages, temperature, top_p, max_tokens, stop=None, reasoning_effort: str = ""):
     kwargs = {
         "model": model,
         "messages": messages,
@@ -387,13 +384,12 @@ def analyze_json_with_groq(full_payload: dict,
                            prompt_path: str = DEFAULT_PROMPT_PATH,
                            config_path: str = "") -> str:
     """
-    Envia TODO o conte?do do JSON para a Groq, em chunks, excluindo
-    apenas registros com queixa e conduta ambos nulos/vazios.
-    Modelo e par?metros lidos do arquivo em groq_modelos/.
+    Envia TODO o conteúdo do JSON para a Groq, em chunks, excluindo
+    apenas registros com queixa e conduta ambos vazios.
     """
     api_key = _env("GROQ_API_KEY", "")
     if not api_key:
-        return "Groq indispon?vel: defina GROQ_API_KEY no ambiente."
+        return "Groq indisponível: defina GROQ_API_KEY no ambiente."
 
     cfg_path = config_path or _env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG)
     groq_cfg, proc_cfg = _read_groq_config(cfg_path)
@@ -415,26 +411,26 @@ def analyze_json_with_groq(full_payload: dict,
 
     # Prompt
     external_system_prompt, _ = _load_prompt_file(_env("PROMPT_PATH", prompt_path))
-    system_prompt = external_system_prompt or "Voc? ? um assistente cl?nico objetivo. Responda em pt-BR."
+    system_prompt = external_system_prompt or "Você é um assistente clínico objetivo. Responda em pt-BR."
 
     # Registros
     records: List[dict] = list(full_payload.get("amostra") or [])
     df_all = pd.DataFrame.from_records(records) if records else pd.DataFrame()
     df_envio = _filter_with_content(df_all)
 
-    print(f"[Groq] Registros no JSON: {len(df_all)} | Enviados (p?s-filtro queixa/conduta): {len(df_envio)}")
+    print(f"[Groq] Registros no JSON: {len(df_all)} | Enviados: {len(df_envio)}")
     if df_envio.empty:
-        return "Nenhum registro eleg?vel para an?lise (queixa e conduta vazios em todos)."
+        return "Nenhum registro elegível para análise (queixa e conduta vazios em todos)."
 
     parts = []
     # Chunks
     for k, n, recs in _iter_chunks(df_envio.to_dict(orient="records"), chunk_size):
         payload_str = json.dumps(recs, ensure_ascii=False)
         user_msg = (
-            f"Parte {k}/{n} de prontu?rios (JSON):\n{payload_str}\n\n"
+            f"Parte {k}/{n} de prontuários (JSON):\n{payload_str}\n\n"
             "Tarefa: Resuma APENAS esta parte em bullets objetivos. "
             "Liste idprontuario, datas (datainicioconsulta/datafimconsulta), posto, "
-            "queixa/conduta relevantes e rela??o com 'queixa_atual_informada' quando existir."
+            "queixa/conduta relevantes e relação com 'queixa_atual_informada' quando existir."
         )
         attempt = 0
         while True:
@@ -459,11 +455,11 @@ def analyze_json_with_groq(full_payload: dict,
         if sleep_between > 0:
             time.sleep(sleep_between)
 
-    # Consolida??o final
+    # Consolidação final
     final_user = (
-        "Consolide os resumos parciais abaixo em um relat?rio ?nico no formato:\n"
+        "Consolide os resumos parciais abaixo em um relatório único no formato:\n"
         "1) Resumo executivo\n2) Linha do tempo por posto/data\n3) Achados relevantes\n"
-        "4) Lacunas de dados\n5) Pr?ximos passos\n\n"
+        "4) Lacunas de dados\n5) Próximos passos\n\n"
         + "\n\n---\n\n".join(parts)
     )
     attempt = 0
@@ -483,57 +479,75 @@ def analyze_json_with_groq(full_payload: dict,
             if attempt > max_retries:
                 raise
             wait = (retry_backoff ** (attempt - 1))
-            print(f"[Groq] Falha na consolida??o ({e}). Retry {attempt}/{max_retries} em {wait:.1f}s.")
+            print(f"[Groq] Falha na consolidação ({e}). Retry {attempt}/{max_retries} em {wait:.1f}s.")
             time.sleep(wait)
+
+
+# =========================
+# ARGPARSE (flags de linha de comando)
+# =========================
+def parse_args():
+    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + análise Groq.")
+    p.add_argument("-n", "--nome", help="Nome completo do paciente")
+    p.add_argument("-d", "--nascimento", help="Data de nascimento dd/mm/yyyy")
+    p.add_argument("-q", "--queixa", help="Queixa atual")
+    p.add_argument("-a", "--api", choices=["openai", "groq", "1", "2"], help="Provedor de análise")
+    p.add_argument("--like", action="store_true", help="Se não achar por igualdade, tenta LIKE automaticamente")
+    p.add_argument("--no-delete-json", action="store_true", help="Não pergunta e mantém o JSON")
+    p.add_argument("--prompt-path", default=_env("PROMPT_PATH", DEFAULT_PROMPT_PATH), help="Caminho do prompt")
+    p.add_argument("--groq-config", default=_env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG), help="Caminho do INI da Groq")
+    return p.parse_args()
 
 
 # =========================
 # FLUXO PRINCIPAL (CLI)
 # =========================
 def main():
-    """Orquestra input, consultas, consolida??o, JSON e an?lise."""
+    """Orquestra input, consultas, consolidação, JSON e análise."""
     ensure_dirs()
+    args = parse_args()
 
-    # -------- Inputs --------
-    nome = input("1) Nome completo do paciente: ").strip()
-    data_nasc_str = input("2) Data de nascimento (dd/mm/yyyy): ").strip()
-    queixa = input("3) Queixa atual do paciente: ").strip()
-    api_choice = input("API para an?lise? (1=OpenAI, 2=Groq): ").strip()
+    # -------- Inputs com fallback para input() --------
+    nome = args.nome or input("1) Nome completo do paciente: ").strip()
+    data_nasc_str = args.nascimento or input("2) Data de nascimento (dd/mm/yyyy): ").strip()
+    queixa = args.queixa or input("3) Queixa atual do paciente: ").strip()
+    api_choice = args.api or input("API para análise? (1=OpenAI, 2=Groq): ").strip()
 
-    # -------- Valida??o da data --------
+    # normaliza provedor
+    api_choice = {"1": "openai", "2": "groq"}.get(api_choice, api_choice)
+
+    # -------- Validação da data --------
     try:
         nasc_date = datetime.strptime(data_nasc_str, "%d/%m/%Y").date()
     except ValueError:
-        print("Data inv?lida. Use dd/mm/yyyy.")
+        print("Data inválida. Use dd/mm/yyyy.")
         return
 
-    # -------- Verifica conex?es --------
-    if not CONNS:
+    # -------- Verifica conexões --------
+    conns = build_conns_from_env()
+    if not conns:
         print("Nenhum posto configurado no .env. Preencha DB_HOST_*/DB_BASE_* e rode novamente.")
         return
 
     # -------- Igualdade exata --------
     frames = []
-    for lbl, conn_str in CONNS.items():
+    for lbl, conn_str in conns.items():
         df = query_posto(lbl, conn_str, nome, nasc_date, use_like=False)
         if not df.empty:
             df.insert(0, "posto", lbl)
             frames.append(df)
 
-    frames_nonempty = [df for df in frames if not df.empty]
-    df_all = pd.concat(frames_nonempty, ignore_index=True) if frames_nonempty else pd.DataFrame()
-
     # -------- Fallback LIKE --------
-    if df_all.empty:
+    df_all = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    if df_all.empty and (args.like or True):  # sempre tenta LIKE automaticamente se nada encontrado
         print("Nenhum dado com igualdade exata. Tentando busca parcial (LIKE)...")
         frames_like = []
-        for lbl, conn_str in CONNS.items():
+        for lbl, conn_str in conns.items():
             df = query_posto(lbl, conn_str, nome, nasc_date, use_like=True)
             if not df.empty:
                 df.insert(0, "posto", lbl)
                 frames_like.append(df)
-        frames_like_nonempty = [df for df in frames_like if not df.empty]
-        df_all = pd.concat(frames_like_nonempty, ignore_index=True) if frames_like_nonempty else pd.DataFrame()
+        df_all = pd.concat(frames_like, ignore_index=True) if frames_like else pd.DataFrame()
 
     # -------- Sem resultados --------
     if df_all.empty:
@@ -543,7 +557,11 @@ def main():
     # -------- Enriquecimento e resumo --------
     df_all["queixa_atual_informada"] = queixa
     print("\nResumo (top 10 linhas):")
-    print(df_all.head(10).to_string(index=False))
+    try:
+        print(df_all.head(10).to_string(index=False))
+    except Exception:
+        # fallback se houver caracteres problemáticos
+        print(df_all.head(10))
 
     # -------- JSON: salvar TUDO --------
     df_json = sanitize_for_json(df_all)
@@ -555,26 +573,35 @@ def main():
             "gerado_em": datetime.now().isoformat(),
             "registros": int(len(df_all)),
         },
-        # TUDO para auditoria. Sem .head().
         "amostra": df_json.to_dict(orient="records"),
     }
     json_path = save_json(payload)
     print(f"\nJSON gerado: {json_path}")
 
-    # -------- An?lise Groq: envia TUDO em chunks, filtrando s? linhas sem conte?do --------
-    if api_choice == "2":
-        cfg_path = _env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG)
+    # -------- Análise --------
+    if api_choice == "groq":
+        cfg_path = args.groq_config
         print(f"\n[A] Enviando JSON para Groq com config: {cfg_path}")
         try:
-            suggestion = analyze_json_with_groq(payload, prompt_path=_env("PROMPT_PATH", DEFAULT_PROMPT_PATH), config_path=cfg_path)
-            print("\n[Sugest?o da IA]:")
+            suggestion = analyze_json_with_groq(
+                payload,
+                prompt_path=args.prompt_path,
+                config_path=cfg_path,
+            )
+            print("\n[Sugestão da IA]:")
             print(suggestion)
         except Exception as e:
-            print(f"\n[ERRO] Falha na an?lise Groq: {e}")
-    elif api_choice == "1":
-        print("\nOpenAI selecionado. Integra??o n?o implementada neste script.")
+            print(f"\n[ERRO] Falha na análise Groq: {e}")
+    elif api_choice == "openai":
+        print("\nOpenAI selecionado. Integração leve não implementada neste CLI.")
+    else:
+        print("\nProvedor inválido. Use 'groq' ou 'openai'.")
 
     # -------- Limpeza do JSON --------
+    if args.no_delete_json:
+        print("JSON mantido por opção de linha de comando (--no-delete-json).")
+        return
+
     opt = input("\nDeseja apagar o JSON gerado? (s/n): ").strip().lower()
     if opt == "s":
         try:
@@ -586,14 +613,9 @@ def main():
         print("JSON mantido.")
 
 
-# Entry point
-if __name__ == "__main__":
-    main()
-
-
-# --- API ---
-from typing import Optional, Literal
-
+# =========================
+# FUNÇÃO PÚBLICA PARA API
+# =========================
 def executar_pipeline_api(
     nome: str,
     data_nascimento_mmddyyyy: str,
@@ -603,30 +625,32 @@ def executar_pipeline_api(
     like: bool = False,
 ) -> dict:
     """
-    Orquestra o fluxo existente e retorna um dict para a API.
-    - data_nascimento_mmddyyyy: "mm/dd/yyyy" (converte p/ date)
-    - provedor: "groq" usa analyze_json_with_groq; "openai" usa REST compat?vel.
+    Orquestra o fluxo e retorna um dict para uso em API.
+    - data_nascimento_mmddyyyy: "mm/dd/yyyy"
+    - provedor: "groq" usa analyze_json_with_groq; "openai" usa REST compatível.
     """
     ensure_dirs()
-    # 1) Data: mm/dd/yyyy -> date
+
+    # 1) Data
     try:
         nasc_date = datetime.strptime(data_nascimento_mmddyyyy, "%m/%d/%Y").date()
     except ValueError as e:
-        return {"ok": False, "erro": f"Data inv?lida: {e}. Use mm/dd/yyyy."}
+        return {"ok": False, "erro": f"Data inválida: {e}. Use mm/dd/yyyy."}
 
-    if not CONNS:
+    conns = build_conns_from_env()
+    if not conns:
         return {"ok": False, "erro": "Nenhum posto configurado (.env DB_HOST_*/DB_BASE_*)."}
 
     # 2) Busca
     frames = []
-    for lbl, conn_str in CONNS.items():
+    for lbl, conn_str in conns.items():
         df = query_posto(lbl, conn_str, nome, nasc_date, use_like=False)
         if not df.empty:
             df.insert(0, "posto", lbl)
             frames.append(df)
 
     if not frames and like:
-        for lbl, conn_str in CONNS.items():
+        for lbl, conn_str in conns.items():
             df = query_posto(lbl, conn_str, nome, nasc_date, use_like=True)
             if not df.empty:
                 df.insert(0, "posto", lbl)
@@ -652,34 +676,45 @@ def executar_pipeline_api(
     }
     json_path = save_json(payload)
 
-    # 4) An?lise
-    analise_texto = ""
+    # 4) Análise
     if provedor == "groq":
         analise_texto = analyze_json_with_groq(
             payload,
             prompt_path=_env("PROMPT_PATH", DEFAULT_PROMPT_PATH),
             config_path=_env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG),
         )
-        prov = "groq"
         modelo_usado = _read_groq_config(_env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG))[0].get("model") or "openai/gpt-oss-120b"
-    elif provedor == "openai":
-        # Implementa??o leve via REST
+        return {
+            "ok": True,
+            "provedor": "groq",
+            "modelo": modelo_usado,
+            "registros": int(len(df_all)),
+            "json_path": json_path,
+            "analise": analise_texto,
+        }
+
+    if provedor == "openai":
         import requests as _rq
         OPENAI_API_KEY = _env("OPENAI_API_KEY", "")
         if not OPENAI_API_KEY:
-            return {"ok": False, "erro": "OPENAI_API_KEY n?o configurada"}
-        system_prompt = (_load_prompt_file(_env("PROMPT_PATH", DEFAULT_PROMPT_PATH))[0]
-                         or "Voc? ? um assistente cl?nico objetivo. Responda em pt-BR.")
-        # Reaproveita o mesmo filtro+chunk
+            return {"ok": False, "erro": "OPENAI_API_KEY não configurada"}
+
+        system_prompt = (
+            _load_prompt_file(_env("PROMPT_PATH", DEFAULT_PROMPT_PATH))[0]
+            or "Você é um assistente clínico objetivo. Responda em pt-BR."
+        )
+
         records = pd.DataFrame.from_records(payload["amostra"])
         records = _filter_with_content(records).to_dict(orient="records")
-        chunks = list(_iter_chunks(records, 200))
+
+        # partes
         partes = []
-        for k, n, recs in chunks:
+        CHUNK = 200
+        for k, n, recs in _iter_chunks(records, CHUNK):
             user_msg = (
-                f"Parte {k}/{n} de prontu?rios (JSON):\n{json.dumps(recs, ensure_ascii=False)}\n\n"
+                f"Parte {k}/{n} de prontuários (JSON):\n{json.dumps(recs, ensure_ascii=False)}\n\n"
                 "Tarefa: Resuma APENAS esta parte em bullets objetivos. "
-                "Liste idprontuario, datas, posto, queixa/conduta e rela??o com 'queixa_atual_informada'."
+                "Liste idprontuario, datas, posto, queixa/conduta e relação com 'queixa_atual_informada'."
             )
             resp = _rq.post(
                 "https://api.openai.com/v1/chat/completions",
@@ -694,9 +729,10 @@ def executar_pipeline_api(
             )
             resp.raise_for_status()
             partes.append(f"### Parte {k}/{n}\n{resp.json()['choices'][0]['message']['content'].strip()}")
+
         final_msg = (
-            "Consolide os resumos parciais abaixo em um relat?rio ?nico no formato:"
-            " 1) Resumo executivo 2) Linha do tempo por posto/data 3) Achados 4) Lacunas 5) Pr?ximos passos\n\n"
+            "Consolide os resumos parciais abaixo em um relatório único no formato:"
+            " 1) Resumo executivo 2) Linha do tempo por posto/data 3) Achados 4) Lacunas 5) Próximos passos\n\n"
             + "\n\n---\n\n".join(partes)
         )
         resp2 = _rq.post(
@@ -712,16 +748,20 @@ def executar_pipeline_api(
         )
         resp2.raise_for_status()
         analise_texto = resp2.json()["choices"][0]["message"]["content"].strip()
-        prov = "openai"
-        modelo_usado = modelo or "gpt-4o-mini"
-    else:
-        return {"ok": False, "erro": "Provedor inv?lido. Use 'groq' ou 'openai'."}
+        return {
+            "ok": True,
+            "provedor": "openai",
+            "modelo": modelo or "gpt-4o-mini",
+            "registros": int(len(df_all)),
+            "json_path": json_path,
+            "analise": analise_texto,
+        }
 
-    return {
-        "ok": True,
-        "provedor": prov,
-        "modelo": modelo_usado,
-        "registros": int(len(df_all)),
-        "json_path": json_path,
-        "analise": analise_texto,
-    }
+    return {"ok": False, "erro": "Provedor inválido. Use 'groq' ou 'openai'."}
+
+
+# =========================
+# ENTRY POINT
+# =========================
+if __name__ == "__main__":
+    main()
