@@ -1,16 +1,25 @@
 # -*- coding: utf-8 -*-
 """
 project.py — CLI para buscar prontuários em múltiplos bancos (por “posto”),
-gerar JSON SOMENTE com históricos e enviar a análise para LLM via Groq, em
-modo map–reduce (chunking), com fail-over pela ordem numérica dos arquivos
-em ./groq_modelos (1-*.txt, 2-*.txt, ...).
+gerar JSON SOMENTE com históricos e enviar a análise para LLM (Groq) em JSON.
 
-O prompt principal é lido de ./prompts/prompt.txt.
+Principais recursos
+- Lê prompt de prompts/prompt.txt (com fallback de encoding).
+- Busca multi-postos (SQL custom por arquivo em ./sql/<POSTO>.sql).
+- "ULTIMOS ATENDIMENTOS": sempre os 10 mais recentes (com especialidade).
+- Filtra de ENVIAR À IA entradas com “não compareceu ... chamad”.
+- Limpa ./json e ./reports >1h a cada execução.
+- Groq: lê N modelos .ini em ./groq_modelos por ordem numérica (1-*.ini, 2-*.ini...).
+  Campos suportados nos .ini (seção [groq]): model, temperature, top_p, max_tokens,
+  reasoning_effort, json_mode, stop (lista JSON).
+- Adaptive chunking: se der context_length_exceeded, reduz o HISTÓRICO e re-tenta.
+- Nomes de chaves no JSON final:
+  "ULTIMOS ATENDIMENTOS",
+  "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL",
+  "DIAGNOSTICO DIFERENCIAL",
+  "SUGESTAO CAMPOS OBS E CONDUTA"
 
-Requisitos:
-  pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv requests
-
-.env (exemplos):
+.env (exemplos para cada posto, A/N/X/...):
   DB_HOST_A=...
   DB_PORT_A=1433
   DB_BASE_A=...
@@ -19,24 +28,16 @@ Requisitos:
   DB_ENCRYPT=yes
   DB_TRUST_CERT=yes
   DB_TIMEOUT=5
-
   GROQ_API_KEY=...
 
-Estrutura esperada:
-  /sql/{A..M}.sql            # opcional; se faltar, usa SELECT padrão
-  /groq_modelos/1-*.txt      # modelo 1 (prioridade)
-  /groq_modelos/2-*.txt      # modelo 2 (fallback), etc.
-    - cada .txt pode ter:
-        a) INI: [groq]\nmodel="nome-do-modelo"
-        b) ou primeira linha útil com o nome do modelo
-
-Saída do programa: APENAS JSON.
+Requisitos:
+  pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv requests
 """
 
 import os, re, json, uuid, time, argparse, unicodedata
 from datetime import datetime
 from urllib.parse import quote_plus
-from typing import List, Optional, Dict, Any
+from typing import List, Tuple, Iterable, Optional, Literal, Dict, Any
 
 import numpy as np
 import pandas as pd
@@ -53,7 +54,7 @@ SQL_DIR      = os.path.join(BASE_DIR, "sql")
 JSON_DIR     = os.path.join(BASE_DIR, "json")
 PROMPTS_DIR  = os.path.join(BASE_DIR, "prompts")
 REPORTS_DIR  = os.path.join(BASE_DIR, "reports")
-PROMPT_TXT   = os.path.join(PROMPTS_DIR, "prompt.txt")
+PROMPT_FILE  = os.path.join(PROMPTS_DIR, "prompt.txt")
 
 POSTOS = ["A", "N", "X", "Y", "B", "R", "P", "C", "D", "G", "I", "J", "M"]
 
@@ -109,18 +110,18 @@ def clean_text(s: Optional[str]) -> str:
 def strip_accents(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
 
-def load_prompt_text() -> str:
-    try:
-        with open(PROMPT_TXT, "r", encoding="utf-8") as f:
-            txt = f.read().strip()
-        return txt
-    except Exception:
-        # fallback curto e seguro
-        return (
-            'Responda APENAS JSON válido com as chaves: '
-            '{"bloco2":[...],"bloco3":[...],"bloco4":{"observacao":"","conduta":""},"rodape":[...]} '
-            'Não invente. Cite fontes (Posto X, id Y, data Z) quando usar histórico.'
-        )
+def load_user_prompt() -> str:
+    """Lê prompts/prompt.txt com tentativas de encoding."""
+    paths = [PROMPT_FILE]
+    for p in paths:
+        if os.path.isfile(p):
+            for enc in ("utf-8", "utf-8-sig", "cp1252", "latin-1"):
+                try:
+                    with open(p, "r", encoding=enc) as f:
+                        return f.read().strip()
+                except Exception:
+                    continue
+    return ""  # vazio não quebra; só reduz contexto
 
 # ---------------- Conexão ----------------
 def build_conn_str(host, base, user, pwd, port, encrypt, trust_cert, timeout) -> str:
@@ -160,7 +161,7 @@ def load_sql_for_posto(posto: str) -> str:
         with open(path, "r", encoding="utf-8") as f:
             sql = f.read().strip()
         return sql[:-1] if sql.endswith(";") else sql
-    # default (ajuste conforme schema local)
+    # default genérico (ajuste ao seu schema, se necessário)
     return (
         "SELECT "
         "p.idprontuario, p.idcliente, p.iddependente, p.matricula, p.idendereco, "
@@ -234,254 +235,331 @@ def _no_show_row(row: dict) -> bool:
 def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
     df = df_all.copy()
     df["_dt_ini"] = pd.to_datetime(df["datainicioconsulta"], errors="coerce")
+    cols = ["idprontuario","posto","_dt_ini","especialidade","queixa","observacao","conduta"]
+    for c in cols:
+        if c not in df.columns:
+            df[c] = None
     df = (
-        df.loc[df["_dt_ini"].notna(),
-               ["idprontuario", "posto", "_dt_ini", "queixa", "observacao", "conduta"]]
+        df.loc[df["_dt_ini"].notna(), cols]
           .sort_values("_dt_ini", ascending=False)
           .head(10)
           .copy()
     )
     df["data"] = df["_dt_ini"].dt.strftime("%d/%m/%Y")
+
     def _mk_resumo(r):
         partes = [clean_text(r["queixa"]), clean_text(r["observacao"]), clean_text(r["conduta"])]
         partes = [p for p in partes if p]
-        if not partes:
-            return ""
-        s = ". ".join(partes).strip(" .")
-        return s + "."
+        return (". ".join(partes).strip(" .") + ".") if partes else ""
+
     df["resumo"] = df.apply(_mk_resumo, axis=1)
     return df
 
-# ---------------- Chunking (map–reduce) ----------------
-def _rough_tokens(s: str) -> int:
-    # Estimativa simples (~4 chars por token)
-    return max(1, len(s) // 4)
+# ---------------- Prompt base do sistema ----------------
+STRICT_PROMPT = """# STRICT_EVIDENCE_PROMPT_v3 (pt-BR)
 
-def _records_to_json(records):
-    return json.dumps(records, ensure_ascii=False)
+REGRAS OBRIGATÓRIAS
+1) PROIBIDO inventar. Só cite EXAMES/DIAGNÓSTICOS/MEDICAÇÕES que estejam no HISTORICO_JSON.
+2) Sempre que citar algo clínico do histórico, ANEXE a FONTE: (Posto {posto}, id {idprontuario}, data {datainicioconsulta}).
+3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO HISTÓRICO”.
 
-# prompt parcial (MAP) curto para extrair sinalizações + similares
-PARTIAL_PROMPT = """Responda SOMENTE JSON no formato:
+SAÍDA OBRIGATÓRIA (JSON — SOMENTE JSON):
 {
- "bloco2": ["..."],    // linhas com (Posto X, id Y, data Z) quando houver
- "sinais": ["..."],    // termos/achados relevantes extraídos do lote
- "red_flags": ["..."]  // red flags do lote
+  "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": [
+    "Linha por atendimento similar (>=70% de similaridade com a queixa atual), com RESUMO CONCISO que inclua: queixa, achados relevantes e CONDUTA registrada (se houver) + FONTE."
+  ],
+  "DIAGNOSTICO DIFERENCIAL": [
+    "Hipóteses diagnósticas em linguagem médica (ex.: gastrite/DRGE/úlcera péptica/colelitíase/pancreatite/angina...), priorizadas por probabilidade e red flags; se citar algo do histórico, incluir FONTE."
+  ],
+  "SUGESTAO CAMPOS OBS E CONDUTA": {
+    "observacao": "Texto clínico objetivo (estilo médico: queixa, evolução, sinais vitais/achados, fatores de risco/red flags quando houver; sem inventar).",
+    "conduta": "Plano objetivo em linguagem médica (ex.: medidas de suporte, exames pertinentes, critérios de retorno e sinais de alarme; evitar prescrever fármacos sem evidência do histórico)."
+  ],
+  "rodape": [ "Itens sem evidência textual explícita: ... ou NENHUM" ]
 }
-Sem repetir Bloco 1. Sem inventar. Use as fontes (Posto/id/data) dos itens DESTE lote quando aplicável.
+
+RESTRIÇÕES
+- NÃO repetir nem alterar a seção 'ULTIMOS_ATENDIMENTOS' (já fornecida).
+- Use linguagem técnica, concisa e isenta.
+- A resposta deve ser JSON válido (sem comentários/campos extras).
 """
 
-def _map_prompt(queixa_atual: str, lote_json: str) -> str:
-    return f"QUEIXA_ATUAL:\n{queixa_atual}\n\nHISTORICO_JSON:\n{lote_json}\n\n{PARTIAL_PROMPT}"
-
-def _reduce_prompt(queixa_atual: str, bloco1_linhas: list, parciais: list[dict]) -> str:
-    linhas_vis = ['idprontuario | posto | data | resumo'] + [
-        f'{r["idprontuario"]} | {r["posto"]} | {r["data"]} | {r["resumo"]}' for r in bloco1_linhas
-    ]
-    b1 = "\n".join(linhas_vis)
-    agregado = {
-        "bloco2_all": sum((p.get("bloco2",[]) for p in parciais), []),
-        "sinais_all": sum((p.get("sinais",[]) for p in parciais), []),
-        "red_flags_all": sum((p.get("red_flags",[]) for p in parciais), []),
-    }
-    strict = load_prompt_text()  # conteúdo de prompts/prompt.txt
-    return (
+def build_prompt_json(queixa_atual: str, bloco1_linhas: List[Dict[str, Any]], historicos_filtrados: List[Dict[str, Any]]) -> str:
+    linhas_vis = ["idprontuario | posto | data | especialidade | resumo"]
+    for r in bloco1_linhas:
+        linhas_vis.append(f'{r["idprontuario"]} | {r["posto"]} | {r["data"]} | {r.get("especialidade","")} | {r["resumo"]}')
+    bloco1_txt = "\n".join(linhas_vis)
+    hist_json = json.dumps(historicos_filtrados, ensure_ascii=False)
+    usr_prompt = load_user_prompt()
+    prompt = (
+        (usr_prompt + "\n\n") if usr_prompt else ""
+    ) + (
         f"QUEIXA_ATUAL:\n{queixa_atual}\n\n"
-        f"BLOCO_1_TABELA_FIXA (NÃO ALTERAR):\n{b1}\n\n"
-        f"PARCIAIS_JSON:\n{json.dumps(agregado, ensure_ascii=False)}\n\n"
-        f"{strict}"
+        f"ULTIMOS_ATENDIMENTOS (NÃO ALTERAR):\n{bloco1_txt}\n\n"
+        f"HISTORICO_JSON:\n{hist_json}\n\n"
+        f"{STRICT_PROMPT}"
     )
+    return prompt
 
-def _chunk_records_for_model(records: List[dict], model_name: str, tgt_tokens_per_chunk: int) -> List[List[dict]]:
-    """
-    Divide o histórico em lotes que caibam no contexto alvo do modelo.
-    Trunca campos textuais gigantes (proteção).
-    """
-    chunks, cur = [], []
-    for r in sorted(records, key=lambda x: x.get("datainicioconsulta") or "", reverse=True):
-        # truncagens defensivas
-        r = dict(r)
-        for k in ("queixa", "observacao", "conduta"):
-            v = r.get(k) or ""
-            if isinstance(v, str) and len(v) > 1200:
-                r[k] = v[:1200] + "..."
-        probe = _records_to_json(cur + [r])
-        if _rough_tokens(probe) <= max(100, tgt_tokens_per_chunk):
-            cur.append(r)
-        else:
-            if cur:
-                chunks.append(cur)
-            cur = [r]
-    if cur:
-        chunks.append(cur)
-    return chunks
+# ---------------- Groq: carregar modelos .ini por ordem numérica ----------------
+def _parse_ini(path: str) -> Optional[dict]:
+    try:
+        txt = open(path, "r", encoding="utf-8").read().replace("\r\n", "\n")
+    except Exception:
+        try:
+            txt = open(path, "r", encoding="latin-1").read()
+        except Exception:
+            return None
+    parser = ConfigParser(inline_comment_prefixes=("#",";"))
+    try:
+        parser.read_string(txt)
+    except Exception:
+        return None
+    if not parser.has_section("groq"):
+        return None
+    g = dict(parser.items("groq"))
+    cfg = {
+        "model": g.get("model","").strip().strip('"').strip("'"),
+        "temperature": float(g.get("temperature", "0.2") or 0.2),
+        "top_p": float(g.get("top_p", "1") or 1),
+        "max_tokens": int(g.get("max_tokens", "1800") or 1800),
+        "json_mode": str(g.get("json_mode","true")).strip().lower() in {"1","true","yes","on"},
+        "reasoning_effort": (g.get("reasoning_effort","") or "").strip().strip('"').strip("'"),
+        "stop": None
+    }
+    if "stop" in g:
+        try:
+            cfg["stop"] = json.loads(g["stop"])
+            if not isinstance(cfg["stop"], list):
+                cfg["stop"] = None
+        except Exception:
+            cfg["stop"] = None
+    if not cfg["model"]:
+        return None
+    return cfg
 
-# ---------------- Groq REST ----------------
-def _request_with_retries(func, label: str, attempts: int = 3, backoff: float = 1.5) -> Optional[str]:
+def load_groq_models_ordered() -> List[dict]:
+    folder = os.path.join(BASE_DIR, "groq_modelos")
+    if not os.path.isdir(folder):
+        return []
+    files = [f for f in os.listdir(folder) if f.lower().endswith(".ini")]
+    # ordenar pelo prefixo numérico; empatar por nome
+    def keyfn(fname):
+        m = re.match(r"^\s*(\d+)", fname)
+        n = int(m.group(1)) if m else 9999
+        return (n, fname.lower())
+    files.sort(key=keyfn)
+    out = []
+    for fname in files:
+        cfg = _parse_ini(os.path.join(folder, fname))
+        if cfg:
+            out.append(cfg)
+    return out
+
+# ---------------- Groq REST + adaptive chunking ----------------
+def _request_with_retries(func, label: str, attempts: int = 3, backoff: float = 1.5) -> Optional[requests.Response]:
     import random
+    resp = None
     for i in range(attempts):
         try:
-            out = func()
-            if out and out.strip():
-                return out
+            resp = func()
+            return resp
         except requests.HTTPError as e:
-            retry_after = 0.0
-            if e.response is not None:
-                ra = e.response.headers.get("Retry-After")
-                try:
-                    retry_after = float(ra)
-                except Exception:
-                    retry_after = 0.0
+            status = getattr(e.response, "status_code", None)
+            txt = ""
             try:
-                body = e.response.json()
+                txt = e.response.json()
             except Exception:
-                body = e.response.text if e.response is not None else ""
-            print(f"[{label}] HTTP {getattr(e.response,'status_code',None)}: {str(body)[:800]}")
+                txt = getattr(e.response, "text", "")[:800]
+            print(f"[{label}] HTTP {status}: {txt}")
             if i < attempts - 1:
-                delay = max(retry_after, (backoff ** i)) + random.uniform(0,0.4)
+                delay = (backoff ** i) + random.uniform(0,0.4)
                 print(f"[{label}] retry em {delay:.1f}s...")
                 time.sleep(delay)
                 continue
             return None
         except Exception as e:
             print(f"[{label}] erro: {e}")
-        if i < attempts - 1:
-            delay = (backoff ** i)
-            print(f"[{label}] vazio/sem resposta. retry em {delay:.1f}s...")
-            time.sleep(delay)
-    return None
+            if i < attempts - 1:
+                delay = (backoff ** i)
+                print(f"[{label}] retry em {delay:.1f}s...")
+                time.sleep(delay)
+                continue
+            return None
+    return resp
 
-def _groq_chat_with_model(model: str, prompt: str, max_tokens: int = 900) -> Optional[str]:
-    api_key = _env("GROQ_API_KEY","")
+def groq_try_models_json(prompt_builder, queixa_atual, bloco1_list, hist_records) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Itera modelos (ini) na ordem; para cada modelo faz adaptive chunking do HISTORICO
+    quando há context_length_exceeded. Também remove 'reasoning' se for "unsupported".
+    """
+    api_key = _env("GROQ_API_KEY", "")
     if not api_key:
         print("[GROQ] falta GROQ_API_KEY.")
-        return None
+        return (None, None)
+
+    models = load_groq_models_ordered()
+    if not models:
+        # fallback razoável
+        models = [{
+            "model": "llama-3.3-70b-versatile",
+            "temperature": 0.2, "top_p": 1.0, "max_tokens": 1800,
+            "json_mode": True, "reasoning_effort": "", "stop": None
+        }]
+
     url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type":"application/json"}
-    body = {
-        "model": model,
-        "messages": [
-            {"role":"system","content":"Você é um assistente clínico objetivo. Responda em pt-BR."},
-            {"role":"user","content": prompt},
-        ],
-        "temperature": 0.2,
-        "top_p": 1,
-        "max_tokens": int(max_tokens),
-        "response_format": {"type":"json_object"},
-        "stream": False
-    }
-    def _do():
-        r = requests.post(url, headers=headers, json=body, timeout=90)
-        if r.status_code != 200:
-            try: print(f"[GROQ-{model}] HTTP {r.status_code}: {r.json()}")
-            except: print(f"[GROQ-{model}] HTTP {r.status_code}: {r.text[:800]}")
-            r.raise_for_status()
-        data = r.json()
-        choices = (data or {}).get("choices") or []
-        if not choices or not choices[0].get("message", {}).get("content"):
-            raise RuntimeError("groq_empty_or_malformed")
-        return choices[0]["message"]["content"].strip()
-    return _request_with_retries(_do, f"GROQ-{model}", attempts=3, backoff=1.5)
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-# ---------------- Modelos (ordem 1-,2-,3-...) ----------------
-def _load_groq_models_ordered() -> List[str]:
-    folder = os.path.join(BASE_DIR, "groq_modelos")
-    if not os.path.isdir(folder):
-        return []
-    files = [f for f in os.listdir(folder) if re.match(r"^\d+-.*\.txt$", f)]
-    files.sort(key=lambda x: int(x.split("-")[0]))
-    models = []
-    for f in files:
-        p = os.path.join(folder, f)
+    # Começa com todo histórico; se estourar, corta pela metade (por nº de registros)
+    records_sorted = hist_records[:]  # já saneado
+    # ordenar por data de início se existir (string ISO)
+    def _dtkey(r):
+        d = r.get("datainicioconsulta")
         try:
-            txt = open(p,"r",encoding="utf-8").read()
-            # tenta INI
-            m = None
-            try:
-                cp = ConfigParser(inline_comment_prefixes=("#",";"))
-                cp.read_string(txt)
-                if cp.has_section("groq") and cp.has_option("groq","model"):
-                    m = cp.get("groq","model").strip().strip('"').strip("'")
-            except Exception:
-                pass
-            if not m:
-                for ln in txt.splitlines():
-                    ln = ln.strip()
-                    if ln and not ln.startswith(("#",";","//","[")):
-                        m = re.split(r"\s[#;].*$", ln)[0].strip().strip('"').strip("'")
-                        break
-            if m:
-                models.append(m)
+            return d or ""
         except Exception:
-            continue
-    return models
+            return ""
+    records_sorted.sort(key=_dtkey, reverse=True)
 
-# Limites conservadores por modelo (tokens de contexto)
-CONTEXT_LIMITS = {
-    "openai/gpt-oss-120b": 8000,          # modelo OSS 120b (8k aprox)
-    "llama-3.3-70b-versatile": 128000,    # 128k
-    "deepseek-r1-distill-llama-70b": 128000,
-    "gemma2-9b-it": 8000,
-}
-RESERVED_COMPLETION_TOKENS = 900  # reserva para a resposta
+    for cfg in models:
+        model_name = cfg["model"]
+        print(f"[GROQ] tentando modelo: {model_name}")
 
-# ---------------- IA Orquestração (map–reduce + fail-over) ----------------
-def run_map_reduce_groq(queixa: str, bloco1_list: List[Dict[str,Any]], hist_json_records: List[Dict[str,Any]]) -> tuple[Optional[str], Optional[str]]:
-    models_ordered = _load_groq_models_ordered() or ["llama-3.3-70b-versatile"]
-    ia_json_str, provider_used = None, None
+        # parâmetro reasoning (só se especificado)
+        def _build_body(use_reasoning: bool, recs_slice: List[Dict[str,Any]]) -> dict:
+            prompt = prompt_builder(queixa_atual, bloco1_list, recs_slice)
+            body = {
+                "model": model_name,
+                "messages": [
+                    {"role": "system", "content": "Você é um assistente clínico objetivo. Responda em pt-BR."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": cfg["temperature"],
+                "top_p": cfg["top_p"],
+                "max_tokens": int(cfg["max_tokens"]),
+                "stream": False,
+            }
+            if cfg["json_mode"]:
+                body["response_format"] = {"type": "json_object"}
+            if cfg["stop"]:
+                body["stop"] = cfg["stop"]
+            if use_reasoning and cfg["reasoning_effort"]:
+                body["reasoning"] = {"effort": cfg["reasoning_effort"]}
+            return body
 
-    for model in models_ordered:
-        print(f"[GROQ] tentando modelo: {model}")
-        max_ctx = CONTEXT_LIMITS.get(model, 32000)
-        tgt_tokens_per_chunk = max(1000, max_ctx - RESERVED_COMPLETION_TOKENS - 1200)  # margem p/ instruções
+        # adaptive window (por número de registros)
+        left = 1
+        right = max(50, len(records_sorted))  # teto de busca binária leve
+        right = min(right, len(records_sorted))
+        best = None
 
-        # --- MAP: dividir em lotes
-        lotes = _chunk_records_for_model(hist_json_records, model, tgt_tokens_per_chunk)
-        parciais = []
-        ok_map = True
+        # primeiro, tenta com tudo
+        try_count = 0
+        use_reasoning_flag = True  # se der 'property reasoning unsupported', desliga e reenvia
+        current_slice_size = len(records_sorted)
 
-        for i, lote in enumerate(lotes, 1):
-            p_map = _map_prompt(queixa, _records_to_json(lote))
-            out = _groq_chat_with_model(model, p_map, max_tokens=min(800, RESERVED_COMPLETION_TOKENS))
-            if not out:
-                ok_map = False
+        while True:
+            try_count += 1
+            recs = records_sorted[:current_slice_size]
+            body = _build_body(use_reasoning_flag, recs)
+
+            def _call():
+                resp = requests.post(url, headers=headers, json=body, timeout=90)
+                if resp.status_code != 200:
+                    resp.raise_for_status()
+                return resp
+
+            resp = _request_with_retries(_call, label=f"GROQ-{model_name}", attempts=3, backoff=1.3)
+            if resp is None:
                 break
+
+            # Ok ou erro tratável
             try:
-                parciais.append(json.loads(out))
+                data = resp.json()
             except Exception:
-                ok_map = False
-                break
+                data = {}
 
-        if not ok_map or not parciais:
-            continue  # tenta próximo modelo
+            # Checar estrutura
+            if "choices" in data and data["choices"]:
+                msg = (data["choices"][0].get("message") or {}).get("content", "") or ""
+                if msg.strip():
+                    return (model_name, msg.strip())
 
-        # --- REDUCE: consolidar no formato final exigido em prompt.txt
-        p_reduce = _reduce_prompt(queixa, bloco1_list, parciais)
-        out_final = _groq_chat_with_model(model, p_reduce, max_tokens=min(1000, RESERVED_COMPLETION_TOKENS))
-        if out_final:
-            ia_json_str, provider_used = out_final, "groq"
-            break
+            # Se chegou aqui com 200 mas sem conteúdo, tenta reduzir
+            if current_slice_size > 1:
+                current_slice_size = max(1, current_slice_size // 2)
+                continue
+            break  # nada feito
 
-    return ia_json_str, provider_used
+        # Se caímos por exceptions HTTP, tentar analisar último erro textual do _request_with_retries
+        # Não temos aqui, então refazemos uma tentativa "seca" só para ler o corpo de erro
+        recs = records_sorted[:min(len(records_sorted), 200)]
+        body_err = _build_body(use_reasoning_flag, recs)
+        try:
+            err = requests.post(url, headers=headers, json=body_err, timeout=60)
+            if err.status_code == 400:
+                try:
+                    ej = err.json()
+                except Exception:
+                    ej = {}
+                emsg = (ej.get("error") or {}).get("message", "").lower()
+                # 1) property 'reasoning' is unsupported -> desliga e refaz com mesmo modelo
+                if "reasoning" in emsg and "unsupported" in emsg and use_reasoning_flag:
+                    use_reasoning_flag = False
+                    # refaz com o modelo atual desde o começo
+                    current_slice_size = len(records_sorted)
+                    while True:
+                        recs2 = records_sorted[:current_slice_size]
+                        body2 = _build_body(False, recs2)
+                        r2 = requests.post(url, headers=headers, json=body2, timeout=90)
+                        if r2.status_code == 200:
+                            j2 = r2.json()
+                            if j2.get("choices"):
+                                content = j2["choices"][0]["message"]["content"] or ""
+                                if content.strip():
+                                    return (model_name, content.strip())
+                        else:
+                            try:
+                                jj = r2.json()
+                            except Exception:
+                                jj = {}
+                            em = (jj.get("error") or {}).get("message","").lower()
+                            if "context" in em and "length" in em:
+                                if current_slice_size > 1:
+                                    current_slice_size = max(1, current_slice_size // 2)
+                                    continue
+                        break
+                # 2) context_length_exceeded -> reduz e re-tenta no mesmo modelo
+                if "context" in emsg and "length" in emsg:
+                    current_slice_size = min(len(records_sorted), max(1, len(records_sorted)//2))
+                    while True:
+                        recs3 = records_sorted[:current_slice_size]
+                        body3 = _build_body(use_reasoning_flag, recs3)
+                        r3 = requests.post(url, headers=headers, json=body3, timeout=90)
+                        if r3.status_code == 200:
+                            j3 = r3.json()
+                            if j3.get("choices"):
+                                content = j3["choices"][0]["message"]["content"] or ""
+                                if content.strip():
+                                    return (model_name, content.strip())
+                        else:
+                            try:
+                                jj3 = r3.json()
+                            except Exception:
+                                jj3 = {}
+                            em3 = (jj3.get("error") or {}).get("message","").lower()
+                            if "context" in em3 and "length" in em3 and current_slice_size > 1:
+                                current_slice_size = max(1, current_slice_size // 2)
+                                continue
+                        break
+        except Exception:
+            pass
 
-# ---------------- IA prompt builder (para redução final usa prompt.txt) ----------------
-def build_prompt_json(queixa_atual: str, bloco1_linhas: List[Dict[str, Any]], historicos_filtrados: List[Dict[str, Any]]) -> str:
-    # (mantido por compatibilidade, não usamos diretamente no map–reduce)
-    linhas_vis = ["idprontuario | posto | data | resumo"]
-    for r in bloco1_linhas:
-        linhas_vis.append(f'{r["idprontuario"]} | {r["posto"]} | {r["data"]} | {r["resumo"]}')
-    bloco1_txt = "\n".join(linhas_vis)
-    hist_json = json.dumps(historicos_filtrados, ensure_ascii=False)
-    prompt_main = load_prompt_text()
-    return (
-        f"QUEIXA_ATUAL:\n{queixa_atual}\n\n"
-        f"BLOCO_1_TABELA_FIXA (NÃO ALTERAR):\n{bloco1_txt}\n\n"
-        f"HISTORICO_JSON:\n{hist_json}\n\n"
-        f"{prompt_main}"
-    )
+    return (None, None)
 
 # ---------------- CLI ----------------
 def parse_args():
-    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + análise Groq (JSON, chunking).")
+    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + análise Groq (JSON).")
     p.add_argument("-n", "--nome", help="Nome completo do paciente")
     p.add_argument("-d", "--nascimento", help="Data de nascimento dd/mm/yyyy")
     p.add_argument("-q", "--queixa", help="Queixa atual")
@@ -494,6 +572,7 @@ def main():
     purge_old_files(REPORTS_DIR, 1)
 
     args = parse_args()
+
     nome = args.nome or input("1) Nome completo do paciente: ").strip()
     data_nasc_str = args.nascimento or input("2) Data de nascimento (dd/mm/yyyy): ").strip()
     queixa = args.queixa or input("3) Queixa atual do paciente: ").strip()
@@ -536,10 +615,10 @@ def main():
             "registros_total": 0,
             "provider_mode": "none",
             "provider_used": None,
-            "bloco1": [],
-            "bloco2": ["sem registros"],
-            "bloco3": ["sem registros"],
-            "bloco4": {"observacao": "", "conduta": ""},
+            "ULTIMOS ATENDIMENTOS": [],
+            "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": ["sem registros"],
+            "DIAGNOSTICO DIFERENCIAL": ["sem registros"],
+            "SUGESTAO CAMPOS OBS E CONDUTA": {"observacao": "", "conduta": ""},
             "rodape": ["NENHUM"]
         }, ensure_ascii=False, indent=2))
         return
@@ -552,14 +631,15 @@ def main():
     for col in ["queixa","observacao","conduta","especialidade","profissional_atendente"]:
         df_all[col] = df_all[col].map(clean_text)
 
-    # ----- BLOCO 1 (últimos 10) -----
+    # ----- ULTIMOS ATENDIMENTOS -----
     df_b1 = build_last10(df_all)
-    bloco1_list = []
+    ultimos_atendimentos = []
     for _, r in df_b1.iterrows():
-        bloco1_list.append({
+        ultimos_atendimentos.append({
             "idprontuario": int(r["idprontuario"]) if pd.notna(r["idprontuario"]) else None,
             "posto": r["posto"],
             "data": r["data"],
+            "especialidade": r.get("especialidade") or "",
             "resumo": r["resumo"],
         })
 
@@ -580,7 +660,7 @@ def main():
 
     hist_json_records = sanitize_for_json(df_hist_send).to_dict(orient="records")
 
-    # salvar JSON “completo” (auditoria)
+    # salvar JSON bruto (auditoria)
     payload_full = {
         "metadata": {
             "paciente_input": nome,
@@ -594,34 +674,45 @@ def main():
     json_path = save_json(payload_full)
     print(f"JSON: {os.path.basename(json_path)} (será limpo em ~1h)")
 
-    # ---------------- IA (Groq map–reduce + fail-over) ----------------
-    ia_json_str, provider_used = run_map_reduce_groq(queixa, bloco1_list, hist_json_records)
+    # ---------------- IA (Groq com adaptive chunking) ----------------
+    provider_used, ia_json_str = groq_try_models_json(
+        prompt_builder=build_prompt_json,
+        queixa_atual=queixa,
+        bloco1_list=ultimos_atendimentos,
+        hist_records=hist_json_records
+    )
 
-    bloco2, bloco3, bloco4, rodape = [], [], {"observacao": "", "conduta": ""}, []
+    # ---------------- Parse IA ----------------
+    atds_rel, ddx, obscond, rodape = [], [], {"observacao": "", "conduta": ""}, []
 
     if ia_json_str:
         try:
             parsed = json.loads(ia_json_str)
-            if isinstance(parsed.get("bloco2"), list):
-                bloco2 = [str(x) for x in parsed["bloco2"]]
-            if isinstance(parsed.get("bloco3"), list):
-                bloco3 = [str(x) for x in parsed["bloco3"]]
-            if isinstance(parsed.get("bloco4"), dict):
-                bloco4 = {
-                    "observacao": str(parsed["bloco4"].get("observacao","")),
-                    "conduta": str(parsed["bloco4"].get("conduta",""))
+            # aceitar nomes novos e também variantes antigas, se vierem
+            b2 = parsed.get("ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL") or parsed.get("bloco2")
+            b3 = parsed.get("DIAGNOSTICO DIFERENCIAL") or parsed.get("bloco3")
+            b4 = parsed.get("SUGESTAO CAMPOS OBS E CONDUTA") or parsed.get("bloco4")
+            rp = parsed.get("rodape") or []
+
+            if isinstance(b2, list):
+                atds_rel = [str(x) for x in b2]
+            if isinstance(b3, list):
+                ddx = [str(x) for x in b3]
+            if isinstance(b4, dict):
+                obscond = {
+                    "observacao": str(b4.get("observacao","")),
+                    "conduta": str(b4.get("conduta",""))
                 }
-            if isinstance(parsed.get("rodape"), list):
-                rodape = [str(x) for x in parsed["rodape"]]
+            if isinstance(rp, list):
+                rodape = [str(x) for x in rp]
         except Exception:
-            provider_used = None
             ia_json_str = None
 
     if not ia_json_str:
-        bloco2 = ["não houve resposta da IA - Falha de comunicação. Tem internet?"]
-        bloco3 = ["não houve resposta da IA - Falha de comunicação. Tem internet?"]
-        bloco4 = {"observacao": "não houve resposta da IA - Falha de comunicação. Tem internet?",
-                  "conduta": "não houve resposta da IA - Falha de comunicação. Tem internet?"}
+        atds_rel = ["não houve resposta da IA - Falha de comunicação. Tem internet?"]
+        ddx = ["não houve resposta da IA - Falha de comunicação. Tem internet?"]
+        obscond = {"observacao": "não houve resposta da IA - Falha de comunicação. Tem internet?",
+                   "conduta": "não houve resposta da IA - Falha de comunicação. Tem internet?"}
         if not rodape:
             rodape = ["Itens sem evidência textual explícita: NENHUM"]
 
@@ -634,10 +725,10 @@ def main():
         "registros_total": int(len(df_all)),
         "provider_mode": "json" if ia_json_str else "fail",
         "provider_used": provider_used,
-        "bloco1": bloco1_list,
-        "bloco2": bloco2,
-        "bloco3": bloco3,
-        "bloco4": bloco4,
+        "ULTIMOS ATENDIMENTOS": ultimos_atendimentos,
+        "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": atds_rel,
+        "DIAGNOSTICO DIFERENCIAL": ddx,
+        "SUGESTAO CAMPOS OBS E CONDUTA": obscond,
         "rodape": rodape
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))

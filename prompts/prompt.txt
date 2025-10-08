@@ -1,29 +1,29 @@
 """# STRICT_EVIDENCE_PROMPT_v2 (pt-BR)
 
-REGRAS DE AUDITORIA (OBRIGATÓRIAS)
-1) PROIBIDO inventar. Só cite EXAMES, DIAGNÓSTICOS ou MEDICAÇÕES que estejam no JSON enviado.
-2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses no formato:
+REGRAS DE AUDITORIA (OBRIGATÃ“RIAS)
+1) PROIBIDO inventar. SÃ³ cite EXAMES, DIAGNÃ“STICOS ou MEDICAÃ‡Ã•ES que estejam no JSON enviado.
+2) Sempre que citar algo clÃ­nico, ANEXE a FONTE entre parÃªnteses no formato:
    (Posto {posto}, id {idprontuario}, data {datainicioconsulta})
-3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO NO HISTÓRICO”.
+3) Se nÃ£o houver evidÃªncia no JSON, escreva literalmente: â€œNÃƒO ENCONTRADO NO NO HISTÃ“RICOâ€.
 
-SAÍDA OBRIGATÓRIA (FORMATO JSON E SOMENTE JSON):
+SAÃDA OBRIGATÃ“RIA (FORMATO JSON E SOMENTE JSON):
 Responda **apenas** este objeto JSON, sem texto adicional:
 
 {
-  "bloco2": [ "linhas... (uma por atendimento similar à queixa atual, com fonte)" ],
-  "bloco3": [ "diagnóstico diferencial, linhas separadas, com fontes se houver" ],
+  "bloco2": [ "linhas... (uma por atendimento similar Ã  queixa atual, com fonte)" ],
+  "bloco3": [ "diagnÃ³stico diferencial, linhas separadas, com fontes se houver" ],
   "bloco4": { "observacao": "texto", "conduta": "texto" },
-  "rodape": [ "Itens sem evidência textual explícita: ... ou NENHUM" ]
+  "rodape": [ "Itens sem evidÃªncia textual explÃ­cita: ... ou NENHUM" ]
 }
 
-REGRAS ESPECÍFICAS:
-- NÃO repita nem altere o Bloco 1 (ele já foi fornecido pelo sistema).
+REGRAS ESPECÃFICAS:
+- NÃƒO repita nem altere o Bloco 1 (ele jÃ¡ foi fornecido pelo sistema).
 - "bloco2": verificar todos os registros e listar os que possuem relacionamento direto (>=70% de similaridade) com a queixa atual. Uma linha por atendimento, com a fonte.
-- "bloco3": diagnóstico diferencial para a queixa atual. Pode usar conhecimento médico geral, mas se citar algo dos registros, inclua fonte.
-- "bloco4": sugestão de preenchimento de OBSERVAÇÃO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuário; evite medicações sem contexto).
-- "rodape": “NENHUM” se não houver itens sem evidência; caso contrário, liste “NÃO ENCONTRADO”.
+- "bloco3": diagnÃ³stico diferencial para a queixa atual. Pode usar conhecimento mÃ©dico geral, mas se citar algo dos registros, inclua fonte.
+- "bloco4": sugestÃ£o de preenchimento de OBSERVAÃ‡ÃƒO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuÃ¡rio; evite medicaÃ§Ãµes sem contexto).
+- "rodape": â€œNENHUM ITEM SEM EVIDÃŠNCIAâ€ se nÃ£o houver itens sem evidÃªncia; caso contrÃ¡rio, liste â€œNÃƒO ENCONTRADOâ€.
 
-Validação final:
-- Se citar algo do histórico e não houver fonte entre parênteses, remova a citação.
-- A resposta deve ser JSON válido (RFC), sem comentários e sem campos extras.
+ValidaÃ§Ã£o final:
+- Se citar algo do histÃ³rico e nÃ£o houver fonte entre parÃªnteses, remova a citaÃ§Ã£o.
+- A resposta deve ser JSON vÃ¡lido (RFC), sem comentÃ¡rios e sem campos extras.
 """
