@@ -5,9 +5,8 @@ project.py — Busca prontuários multi-postos, coleta resultados de exames (DB 
 - MODELOS (.ini): ./groq_modelos/*.ini (ordem pelo prefixo numérico 1-*, 2-*, 3-*, 4-*)
 - Consultas por posto (A,N,X,...) usando ./sql/select_prontuarios.sql (único para todos)
 - EXAMES via ./sql/select_resultado_exames.sql (único para todos)
-- Parâmetro novo: --meses / --quantos_meses (padrão 12). Filtra de (hoje - meses) em diante.
-- Se Bloco 1 tiver <10 atendimentos no recorte, reexecuta consultas para 60 meses e anota essa ampliação.
-- Envia histórico em CHUNKS (map→reduce), inclui EXAMES (compactados) e Bloco 1 para resumo (≤500 chars).
+- Pergunta interativa: "Buscar desde (dd/mm/yyyy)" — filtra de dt_ini em diante.
+- Envia histórico em CHUNKS (map→reduce), inclui EXAMES (compactados). Bloco 1 é narrativa pronta.
 - Saída: APENAS JSON (inclui "EXAMES_RESULTADOS", "exames_csv" e "BLOCO1_RESUMO").
 
 Requisitos:
@@ -25,7 +24,6 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from configparser import ConfigParser
 import requests
-from dateutil.relativedelta import relativedelta
 
 # ---------------- Paths / ENV ----------------
 BASE_DIR = os.path.dirname(__file__)
@@ -92,7 +90,8 @@ def clean_text(s: Optional[str]) -> str:
     return s
 
 def strip_accents(s: str) -> str:
-    return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
+    import unicodedata as _u
+    return "".join(c for c in _u.normalize("NFD", s or "") if _u.category(c) != "Mn")
 
 # ---------------- Conexão DB ----------------
 def build_conn_str(host, base, user, pwd, port, encrypt, trust_cert, timeout) -> str:
@@ -140,7 +139,7 @@ def _read_file_any_encoding(path: str) -> str:
 
 def load_prontuario_sql() -> str:
     if not os.path.isfile(PRONT_SQL_FILE):
-        # padrão seguro com DataInicioConsulta >= :dt_ini
+        # fallback seguro
         return (
             "select "
             "p.idprontuario, p.idcliente, p.iddependente, p.matricula, p.idendereco, "
@@ -161,7 +160,7 @@ def load_prontuario_sql() -> str:
     # Corrige "?" -> parâmetros nomeados (na ordem: paciente, nasc, dt_ini)
     if "?" in sql and ":paciente" not in sql:
         sql = sql.replace("?", ":paciente", 1).replace("?", ":nasc", 1).replace("?", ":dt_ini", 1)
-    # pequenas correções de digitação
+    # pequenas correções
     sql = re.sub(r"\band\s+and\b", "and", sql, flags=re.IGNORECASE)
     return sql
 
@@ -184,13 +183,11 @@ def load_exam_sql() -> str:
 
 # ---------- Queries ----------
 def wrap_with_filters(base_sql: str) -> text:
-    # já vem com where correto no arquivo; apenas empacotamos
     return text(base_sql)
 
 def query_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date: date, dt_ini: date, use_like=False) -> pd.DataFrame:
     print(f"[{label}] Conectando...")
     base_sql = load_prontuario_sql()
-    # LIKE opcional: altera a comparação de paciente
     if use_like:
         base_sql = re.sub(
             r"p\.paciente\s*=\s*:paciente",
@@ -243,14 +240,13 @@ def _normalize_cols(df: pd.DataFrame) -> pd.DataFrame:
 
 def _parse_date_any(x):
     if pd.isna(x): return None
-    # tenta datas mais comuns
     for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%dT%H:%M:%S"):
         try: return datetime.strptime(str(x)[:10], fmt).date()
         except: pass
     try:
         v = pd.to_datetime(x, errors="coerce")
         return None if pd.isna(v) else v.date()
-    except: 
+    except:
         return None
 
 def load_exams_from_csvs(nome: str, nasc_date: date, dt_ini: date) -> pd.DataFrame:
@@ -315,6 +311,7 @@ def _no_show_row(row: dict) -> bool:
     return ("nao compareceu" in txt_norm) and ("chamad" in txt_norm)
 
 def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
+    """Seleciona os 10 últimos atendimentos (sem gerar 'resumo' por linha)."""
     df = df_all.copy()
     df["_dt_ini"] = pd.to_datetime(df["datainicioconsulta"], errors="coerce")
     for c in ["idprontuario","posto","_dt_ini","especialidade","queixa","observacao","conduta"]:
@@ -328,19 +325,43 @@ def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
           .copy()
     )
     df["data"] = df["_dt_ini"].dt.strftime("%d/%m/%Y")
-    def _mk_resumo(r):
-        partes = [clean_text(r["queixa"]), clean_text(r["observacao"]), clean_text(r["conduta"])]
-        partes = [p for p in partes if p]
-        return (". ".join(partes).strip(" .") + ".") if partes else ""
-    df["resumo"] = df.apply(_mk_resumo, axis=1)
     return df
+
+def narrate_last10(df_b1: pd.DataFrame) -> str:
+    """
+    Gera título + uma linha por atendimento no formato:
+    Em DD/MM/AAAA, na <especialidade>, registrou-se: <trecho>.
+    """
+    titulo = "RESUMO DOS ÚLTIMOS ATENDIMENTOS"
+    if df_b1 is None or df_b1.empty:
+        return f"{titulo}\n\n"
+    def _short(*vals, maxlen=280):
+        txt = " ".join([clean_text(v) for v in vals if v])
+        txt = re.sub(r"\s+", " ", txt).strip(" .")
+        return (txt[:maxlen] + "…") if len(txt) > maxlen else txt
+    linhas = []
+    for _, r in df_b1.iterrows():
+        data = r.get("data") or ""
+        esp  = clean_text(r.get("especialidade") or "").lower()
+        que  = clean_text(r.get("queixa") or "")
+        obs  = clean_text(r.get("observacao") or "")
+        con  = clean_text(r.get("conduta") or "")
+        trecho = _short(que, obs, con)
+        if esp and trecho:
+            linhas.append(f"Em {data}, na {esp}, registrou-se: {trecho}.")
+        elif esp:
+            linhas.append(f"Em {data}, na {esp}, atendimento sem detalhes textuais relevantes.")
+        else:
+            linhas.append(f"Em {data}, atendimento sem detalhes textuais relevantes.")
+    texto = "\n".join(linhas)
+    return f"{titulo}\n\n{texto}"
 
 # ---------------- Prompt ----------------
 def load_user_prompt() -> str:
     if not os.path.isfile(PROMPT_FILE):
         return (
             "# STRICT_EVIDENCE_PROMPT (fallback)\n"
-            "Devolva SOMENTE JSON com chaves: bloco1_resumo (string<=500), bloco2 (lista), bloco3 (lista), "
+            "Devolva SOMENTE JSON com chaves: bloco2 (lista), bloco3 (lista), "
             "bloco4 {observacao,conduta}, rodape (lista). Não invente fatos."
         )
     return _read_file_any_encoding(PROMPT_FILE).strip()
@@ -368,32 +389,25 @@ def _compact_exam_row(r: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 def build_prompt_chunk(queixa_atual: str,
-                       ultimos_atend: List[Dict[str, Any]],
                        historicos_chunk: List[Dict[str, Any]],
                        user_prompt: str,
                        part_idx: int,
                        part_total: int,
                        exams_compact: List[Dict[str, Any]],
-                       bloco1_observacao: str) -> str:
-    # Bloco 1 texto compacto (também será resumido pela IA)
-    linhas_vis = ["idprontuario | posto | data | especialidade | resumo"]
-    for r in ultimos_atend:
-        linhas_vis.append(
-            f'{r.get("idprontuario")} | {r.get("posto")} | {r.get("data")} | {r.get("especialidade","")} | {r.get("resumo","")}'
-        )
-    bloco1_txt = "\n".join(linhas_vis)
+                       bloco1_observacao: str,
+                       bloco1_narrativa: str) -> str:
+    # Bloco 1 vem pronto e NÃO deve ser alterado; não enviamos array de "últimos atendimentos".
     hist_json = json.dumps(historicos_chunk, ensure_ascii=False)
     exams_json = json.dumps(exams_compact, ensure_ascii=False)
 
     header = (
         f"QUEIXA_ATUAL:\n{queixa_atual}\n\n"
+        f"BLOCO1_TEXTO (NÃO ALTERAR, já é a narrativa final):\n{bloco1_narrativa or '—'}\n\n"
         f"BLOCO1_OBSERVACAO:\n{bloco1_observacao or '—'}\n\n"
-        f"ULTIMOS_ATENDIMENTOS (NÃO ALTERAR, RESUMA EM ≤500 CARACTERES):\n{bloco1_txt}\n\n"
         f"EXAMES_JSON (compacto, considerar em bloco2/3/4):\n{exams_json}\n\n"
         f"HISTORICO_JSON (PARTE {part_idx}/{part_total}):\n{hist_json}\n\n"
         f"Instruções: Responda SOMENTE JSON com as chaves: "
-        f"bloco1_resumo (string ≤500 chars), bloco2 (lista), bloco3 (lista), "
-        f"bloco4 {{observacao,conduta}}, rodape (lista)."
+        f"bloco2 (lista), bloco3 (lista), bloco4 {{observacao,conduta}}, rodape (lista)."
     )
     return header + ("\n\n" + (user_prompt or ""))
 
@@ -429,8 +443,7 @@ def _list_groq_model_configs() -> List[Dict[str, Any]]:
                 def getf(key, default=None):
                     return g.get(key, fallback=default)
                 model = (getf("model","") or "").strip().strip('"').strip("'")
-                if model:
-                    cfg["model"] = model
+                if model: cfg["model"] = model
                 if getf("temperature") is not None:
                     try: cfg["temperature"] = float(getf("temperature"))
                     except: pass
@@ -470,7 +483,6 @@ def _request_with_retries(func, label: str, attempts: int = 3, backoff: float = 
             except Exception:
                 body = e.response.text if e.response is not None else ""
             print(f"[{label}] HTTP {getattr(e.response,'status_code',None)}: {str(body)}")
-            # Se for falha de JSON, não insista no 120b — deixa próximo modelo tentar
             try:
                 if isinstance(body, dict) and body.get("error", {}).get("code") == "json_validate_failed" and "gpt-oss-120b" in label.lower():
                     return None
@@ -506,8 +518,8 @@ def groq_chat_json(prompt: str, cfg: Dict[str, Any]) -> Optional[str]:
     model_name = cfg["model"]
     max_toks = int(cfg.get("max_tokens", 1800))
     if "gpt-oss-120b" in (model_name or ""):
-        max_toks = max(max_toks, 3500)  # mais fôlego para fechar JSON
-        cfg["temperature"] = 0.0        # mais estável para JSON
+        max_toks = max(max_toks, 3500)
+        cfg["temperature"] = 0.0
 
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
@@ -555,7 +567,6 @@ def _safe_json_loads(txt: str) -> Optional[dict]:
     if not txt:
         return None
     s = txt.strip()
-    # remove cercas de markdown
     if s.startswith("```"):
         s = re.sub(r"^```(?:json)?\s*", "", s).rstrip("`").strip()
     try:
@@ -572,12 +583,12 @@ def _safe_json_loads(txt: str) -> Optional[dict]:
 
 # ---------------- Map → Reduce (chunking) ----------------
 def call_groq_map_reduce(queixa_atual: str,
-                         ultimos_atend: List[Dict[str, Any]],
                          historicos: List[Dict[str, Any]],
                          model_cfgs: List[Dict[str, Any]],
                          user_prompt: str,
                          exams_compact: List[Dict[str, Any]],
-                         bloco1_observacao: str) -> Tuple[Optional[str], Dict[str, Any]]:
+                         bloco1_observacao: str,
+                         bloco1_narrativa: str) -> Tuple[Optional[str], Dict[str, Any]]:
     if not model_cfgs:
         return (None, {})
 
@@ -591,11 +602,13 @@ def call_groq_map_reduce(queixa_atual: str,
         agg_bloco3: List[str] = []
         agg_obs, agg_cond = "", ""
         agg_rodape: List[str] = []
-        agg_b1_resumo: str = ""
 
         ok_all = True
         for idx, chunk in enumerate(parts, start=1):
-            prompt = build_prompt_chunk(queixa_atual, ultimos_atend, chunk, user_prompt, idx, total_parts, exams_compact, bloco1_observacao)
+            prompt = build_prompt_chunk(
+                queixa_atual, chunk, user_prompt, idx, total_parts,
+                exams_compact, bloco1_observacao, bloco1_narrativa
+            )
             out = groq_chat_json(prompt, cfg)
             if not out:
                 ok_all = False
@@ -620,8 +633,6 @@ def call_groq_map_reduce(queixa_atual: str,
                 if c: agg_cond = c
             if isinstance(parsed.get("rodape"), list):
                 agg_rodape += [str(x) for x in parsed["rodape"]]
-            if isinstance(parsed.get("bloco1_resumo"), str) and parsed["bloco1_resumo"].strip():
-                agg_b1_resumo = parsed["bloco1_resumo"].strip()[:500]
 
         if not ok_all:
             continue
@@ -634,7 +645,6 @@ def call_groq_map_reduce(queixa_atual: str,
             return out
 
         result = {
-            "bloco1_resumo": agg_b1_resumo[:500],
             "bloco2": _dedup(agg_bloco2)[:30],
             "bloco3": _dedup(agg_bloco3)[:30],
             "bloco4": {"observacao": agg_obs, "conduta": agg_cond},
@@ -650,10 +660,16 @@ def parse_args():
     p.add_argument("-n", "--nome", help="Nome completo do paciente")
     p.add_argument("-d", "--nascimento", help="Data de nascimento dd/mm/yyyy")
     p.add_argument("-q", "--queixa", help="Queixa atual")
-    p.add_argument("--meses", "--quantos_meses", dest="meses", type=int, default=12,
-                   help="Quantidade de meses para trás (padrão: 12).")
     p.add_argument("--like", action="store_true", help="Se não achar por igualdade, tenta LIKE automaticamente (consultas)")
     return p.parse_args()
+
+def _ask_date(msg: str) -> date:
+    while True:
+        s = input(msg).strip()
+        try:
+            return datetime.strptime(s, "%d/%m/%Y").date()
+        except ValueError:
+            print("Data inválida. Use dd/mm/yyyy.")
 
 def main():
     ensure_dirs()
@@ -664,16 +680,13 @@ def main():
     nome = args.nome or input("1) Nome completo do paciente: ").strip()
     data_nasc_str = args.nascimento or input("2) Data de nascimento (dd/mm/yyyy): ").strip()
     queixa = args.queixa or input("3) Queixa atual do paciente: ").strip()
-    meses = args.meses if args.meses and args.meses > 0 else 12
+    dt_ini = _ask_date("4) Buscar desde (dd/mm/yyyy): ")
 
     try:
         nasc_date = datetime.strptime(data_nasc_str, "%d/%m/%Y").date()
     except ValueError:
         print(json.dumps({"ok": False, "erro": "Data inválida. Use dd/mm/yyyy."}, ensure_ascii=False))
         return
-
-    # data inicial a partir de meses
-    dt_ini = date.today() - relativedelta(months=meses)
 
     conns = build_conns_from_env()
     if not conns:
@@ -710,46 +723,16 @@ def main():
             print(f"[EX-CSV] {len(df_csv)} linha(s) carregadas de CSV.")
             df_exams_all = df_csv
 
-    # -------- Fallback 5 anos para Bloco 1 se <10 atendimentos --------
-    bloco1_extra_note = ""
+    # -------- Bloco 1: 10 últimos e narrativa única --------
     if df_all.empty:
-        pass
+        df_b1 = pd.DataFrame(columns=["idprontuario","posto","data","especialidade","queixa","observacao","conduta"])
     else:
-        tmp_last10 = build_last10(df_all)
-        if len(tmp_last10) < 10:
-            print("Poucos registros no recorte. Ampliando busca de consultas para 60 meses (5 anos) apenas para o Bloco 1...")
-            df_all_5y = _run_consultas(date.today() - relativedelta(months=60), like_flag=True)
-            tmp_last10_5y = build_last10(df_all_5y)
-            if len(tmp_last10_5y) > len(tmp_last10):
-                df_all = df_all  # mantém histórico original para IA, mas bloco1 será do recorte ampliado
-                bloco1_extra_note = "Foram encontrados poucos registros no período; o Bloco 1 foi ampliado para os últimos 5 anos."
-                tmp_last10 = tmp_last10_5y
-            # substitui para construção do bloco1
-        df_b1 = tmp_last10
-    if df_all.empty:
-        df_b1 = pd.DataFrame(columns=["idprontuario","posto","data","especialidade","resumo"])
+        df_b1 = build_last10(df_all)
 
-    if df_all.empty and df_exams_all.empty:
-        print(json.dumps({
-            "ok": True,
-            "paciente": nome,
-            "data_nascimento": nasc_date.isoformat(),
-            "queixa_atual": queixa,
-            "registros_total": 0,
-            "provider_mode": "none",
-            "provider_used": None,
-            "BLOCO1_RESUMO": "",
-            "ULTIMOS ATENDIMENTOS": [],
-            "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": ["sem registros"],
-            "DIAGNOSTICO DIFERENCIAL": ["sem registros"],
-            "SUGESTAO CAMPOS OBS E CONDUTA": {"observacao": "", "conduta": ""},
-            "EXAMES_RESULTADOS": [],
-            "exames_csv": None,
-            "rodape": ["NENHUM"]
-        }, ensure_ascii=False, indent=2))
-        return
+    bloco1_narrativa = narrate_last10(df_b1)
 
-    # Normalização mínima das consultas
+    # ------ HISTÓRICO p/ IA (consultas) ------
+    historicos = []
     if not df_all.empty:
         df_all.columns = [str(c).strip().lower() for c in df_all.columns]
         for col in ["queixa","observacao","conduta","especialidade","profissional_atendente","datainicioconsulta"]:
@@ -758,25 +741,11 @@ def main():
         for col in ["queixa","observacao","conduta","especialidade","profissional_atendente"]:
             df_all[col] = df_all[col].map(clean_text)
 
-    # ----- ULTIMOS ATENDIMENTOS ----- (a ser resumido pela IA)
-    ultimos_atendimentos: List[Dict[str,Any]] = []
-    for _, r in df_b1.iterrows():
-        ultimos_atendimentos.append({
-            "idprontuario": int(r["idprontuario"]) if pd.notna(r["idprontuario"]) else None,
-            "posto": r.get("posto"),
-            "data": r.get("data"),
-            "especialidade": r.get("especialidade") or "",
-            "resumo": r.get("resumo",""),
-        })
-
-    # ------ HISTÓRICO p/ IA (consultas) ------
-    historicos = []
-    if not df_all.empty:
         df_hist = df_all.copy()
         mask_send = []
         for _, row in df_hist.iterrows():
             mask_send.append(not _no_show_row(row.to_dict()))
-        df_hist_send = df_hist.loc[mask_send].copy()
+        df_hist_send = df_hist.loc[mask_send].reset_index(drop=True)
 
         def _is_blank_series(s: pd.Series) -> pd.Series:
             if s is None:
@@ -807,8 +776,8 @@ def main():
             "paciente_input": nome,
             "data_nascimento_input": nasc_date.isoformat(),
             "queixa_input": queixa,
-            "meses_input": meses,
             "data_inicial_utilizada": dt_ini.isoformat(),
+            "criterio_tempo": "desde_data_informada",
             "gerado_em": datetime.now().isoformat(),
             "registros_total_consultas": int(len(df_all)) if not isinstance(df_all, list) else 0,
             "registros_total_exames": int(len(df_exams_all)) if not isinstance(df_exams_all, list) else 0,
@@ -822,13 +791,15 @@ def main():
     # ---------------- IA (Groq) ----------------
     prompt_txt = load_user_prompt()
     model_cfgs = _list_groq_model_configs()
+    bloco1_observacao = ""  # use se quiser sinalizar alguma observação do bloco 1
+
     model_used, result = call_groq_map_reduce(
-        queixa, ultimos_atendimentos, historicos, model_cfgs, prompt_txt, exams_compact_for_prompt, bloco1_extra_note
+        queixa, historicos, model_cfgs, prompt_txt,
+        exams_compact_for_prompt, bloco1_observacao, bloco1_narrativa
     )
 
     if not result:
         result = {
-            "bloco1_resumo": "",
             "bloco2": ["não houve resposta da IA - Falha de comunicação. Tem internet?"],
             "bloco3": ["não houve resposta da IA - Falha de comunicação. Tem internet?"],
             "bloco4": {"observacao": "não houve resposta da IA - Falha de comunicação. Tem internet?",
@@ -843,13 +814,13 @@ def main():
         "data_nascimento": nasc_date.isoformat(),
         "queixa_atual": queixa,
         "registros_total": int(len(df_all)) if not df_all.empty else 0,
-        "meses_busca": meses,
+        "meses_busca": None,
         "data_inicial": dt_ini.isoformat(),
-        "bloco1_observacao": bloco1_extra_note or "",
-        "BLOCO1_RESUMO": result.get("bloco1_resumo","")[:500],
+        "bloco1_observacao": bloco1_observacao,
+        "BLOCO1_RESUMO": (bloco1_narrativa or "")[:4000],  # mantém título + linhas
         "provider_mode": "json" if model_used else "fail",
         "provider_used": model_used,
-        "ULTIMOS ATENDIMENTOS": ultimos_atendimentos,
+        # REMOVIDO: "ULTIMOS ATENDIMENTOS"
         "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": result.get("bloco2", []),
         "DIAGNOSTICO DIFERENCIAL": result.get("bloco3", []),
         "SUGESTAO CAMPOS OBS E CONDUTA": result.get("bloco4", {"observacao":"", "conduta":""}),

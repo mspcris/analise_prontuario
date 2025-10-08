@@ -17,13 +17,16 @@ Responda **apenas** este objeto JSON, sem texto adicional:
 }
 
 REGRAS ESPECÍFICAS:
-- NÃO repita nem altere o Bloco 1 (ele já foi fornecido pelo sistema).
+- NÃO altere o Bloco 1: a narrativa dos 10 últimos atendimentos já foi fornecida como texto final (BLOCO1_TEXTO).
 - "bloco2": verificar todos os registros e listar os que possuem relacionamento direto (>=70% de similaridade) com a queixa atual. Uma linha por atendimento, com a fonte.
 - "bloco3": diagnóstico diferencial para a queixa atual. Pode usar conhecimento médico geral, mas se citar algo dos registros, inclua fonte.
 - "bloco4": sugestão de preenchimento de OBSERVAÇÃO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuário; evite medicações sem contexto). Neste campo deve-se preencher o hpp, hda, exame fisico e hipoteses diagnosticas.
 - "rodape": “NENHUM ITEM SEM EVIDÊNCIA” se não houver itens sem evidência; caso contrário, liste “NÃO ENCONTRADO”.
 
 Validação final:
+- Explique claramente o que é cada dado inserido no rodapé, por que está aqui em uma oração simples e, se necessário, faça adicionais in line em cada linha com conteúdo. 
+É inadimisível ter informação no rodapé que eu não saiba de onde veio ou por que veio o que significa. Citou uma doença? 
 - Se citar algo do histórico e não houver fonte entre parênteses, remova a citação.
 - A resposta deve ser JSON válido (RFC), sem comentários e sem campos extras.
 """
+
