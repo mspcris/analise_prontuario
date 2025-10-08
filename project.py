@@ -4,27 +4,21 @@ project.py — CLI para buscar prontuários em múltiplos bancos (por “posto�
 gerar JSON SOMENTE com históricos e enviar a análise para a Groq em chunks.
 A queixa/atendimento atual é enviada como VARIÁVEIS separadas (sem id).
 
-Agora:
-- Bloco 1 também salvo em TXT.
-- Relatório HTML completo salvo em ./reports e IMPRESSO no terminal.
+ATUALIZAÇÕES:
+1) Saída no terminal APENAS TEXTO (sem tabela/HTML). Cada bloco/parágrafo separado por 1 linha em branco.
+2) NÃO enviar para a Groq atendimentos que contenham "O paciente não compareceu a chamada"
+   (variações com acento/maiúsculas/pontuação também são filtradas).
+   >>> Mesma regra aplicada ao BLOCO 1 (não listar “não compareceu” nos 10 últimos).
+3) Saneamento automático: a cada execução, remove arquivos com >1h em ./json e ./reports.
+4) Títulos em CAIXA ALTA e sem repetição. Para o primeiro bloco: imprimir só “ÚLTIMOS 10 ATENDIMENTOS”.
+5) A resposta da IA (Groq/OpenAI) é SEMPRE JSON com schema:
+   {"bloco2": str, "bloco3": str, "bloco4": str, "rodape": str}
 
 Requisitos:
   pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv groq requests
-
-Config (.env na raiz):
-  DB_HOST_A, DB_PORT_A, DB_BASE_A, DB_USER_A, DB_PASSWORD_A
-  # repita para B, C, D, G, I, J, M conforme necessário
-  DB_ENCRYPT=yes|no
-  DB_TRUST_CERT=yes|no
-  DB_TIMEOUT=5
-  GROQ_API_KEY=YOUR_KEY_HERE
-  OPENAI_API_KEY=
-  PROMPT_PATH=prompts/prompt_analise_atds_anteriores.txt
-  GROQ_CONFIG=groq_modelos/gpt120b.txt
-  PROMPT_ENCODING=utf-8
 """
 
-import os, re, json, uuid, time, argparse
+import os, re, json, uuid, time, argparse, unicodedata
 from datetime import datetime
 from urllib.parse import quote_plus
 from typing import List, Tuple, Iterable, Optional, Literal
@@ -35,13 +29,14 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from configparser import ConfigParser
 
+# ---------------- Paths ----------------
 BASE_DIR = os.path.dirname(__file__)
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-SQL_DIR = os.path.join(BASE_DIR, "sql")
-JSON_DIR = os.path.join(BASE_DIR, "json")
-PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
-REPORTS_DIR = os.path.join(BASE_DIR, "reports")
+SQL_DIR      = os.path.join(BASE_DIR, "sql")
+JSON_DIR     = os.path.join(BASE_DIR, "json")
+PROMPTS_DIR  = os.path.join(BASE_DIR, "prompts")
+REPORTS_DIR  = os.path.join(BASE_DIR, "reports")
 DEFAULT_PROMPT_PATH = os.path.join(PROMPTS_DIR, "prompt_analise_atds_anteriores.txt")
 DEFAULT_GROQ_CONFIG = os.path.join(BASE_DIR, "groq_modelos", "gpt120b.txt")
 
@@ -51,6 +46,21 @@ POSTOS = ["A", "N", "X", "Y", "B", "R", "P", "C", "D", "G", "I", "J", "M"]
 def ensure_dirs():
     for d in (SQL_DIR, JSON_DIR, PROMPTS_DIR, REPORTS_DIR):
         os.makedirs(d, exist_ok=True)
+
+def purge_old_files(dirpath: str, older_than_hours: int = 1):
+    """Remove arquivos mais antigos que N horas (executado a cada run)."""
+    if not os.path.isdir(dirpath):
+        return
+    now = time.time()
+    cutoff = now - (older_than_hours * 3600)
+    for root, _, files in os.walk(dirpath):
+        for fn in files:
+            fp = os.path.join(root, fn)
+            try:
+                if os.path.getmtime(fp) < cutoff:
+                    os.remove(fp)
+            except Exception:
+                pass
 
 def _env(key: str, default: str = "") -> str:
     v = os.getenv(key, default)
@@ -81,6 +91,9 @@ def clean_text(s: Optional[str]) -> str:
     s = s.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
     s = re.sub(r"\s+", " ", s).strip()
     return s
+
+def strip_accents(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
 
 # ---------------- Conexão ----------------
 def build_conn_str(host, base, user, pwd, port, encrypt, trust_cert, timeout) -> str:
@@ -287,7 +300,7 @@ def _read_groq_config(path: str) -> tuple[dict, dict]:
 
     return groq, processing
 
-# ---------------- Chunking ----------------
+# ---------------- Chunk helpers ----------------
 def _is_blank_series(s: pd.Series) -> pd.Series:
     if s is None:
         return pd.Series([True] * 0)
@@ -307,6 +320,20 @@ def _iter_chunks(records: List[dict], size: int) -> Iterable[Tuple[int, int, Lis
     for i in range(0, total, size):
         yield (i // size) + 1, n_parts, records[i: i + size]
 
+# ---------------- Filtro "não compareceu" ----------------
+def _no_show_text(txt: str) -> bool:
+    t = strip_accents(txt or "").lower()
+    return ("nao compareceu" in t) and ("chamad" in t)
+
+def _no_show_row(row_like) -> bool:
+    if isinstance(row_like, dict):
+        q = str(row_like.get("queixa", ""))
+        o = str(row_like.get("observacao", ""))
+        c = str(row_like.get("conduta", ""))
+    else:
+        q = str(row_like["queixa"]); o = str(row_like["observacao"]); c = str(row_like["conduta"])
+    return _no_show_text(" ".join([q, o, c]))
+
 # ---------------- Groq ----------------
 def _call_groq(client, model, messages, temperature, top_p, max_tokens, stop=None, reasoning_effort: str = ""):
     kwargs = {"model": model, "messages": messages, "temperature": temperature, "top_p": top_p, "max_tokens": max_tokens}
@@ -316,13 +343,43 @@ def _call_groq(client, model, messages, temperature, top_p, max_tokens, stop=Non
         kwargs["reasoning"] = {"effort": reasoning_effort}
     return client.chat.completions.create(**kwargs)
 
+def _force_json_output(txt: str) -> dict:
+    """Garante dict JSON com chaves bloco2/3/4/rodape (fallback seguro)."""
+    if not txt:
+        return {"bloco2": "", "bloco3": "", "bloco4": "", "rodape": ""}
+    # tentativa direta
+    try:
+        obj = json.loads(txt)
+        for k in ("bloco2", "bloco3", "bloco4", "rodape"):
+            obj.setdefault(k, "")
+        # mantêm só as chaves de interesse
+        return {k: str(obj.get(k, "")) for k in ("bloco2","bloco3","bloco4","rodape")}
+    except Exception:
+        pass
+    # tenta extrair o maior JSON dentro do texto
+    m = re.search(r"\{[\s\S]*\}$", txt.strip())
+    if m:
+        try:
+            obj = json.loads(m.group(0))
+            for k in ("bloco2", "bloco3", "bloco4", "rodape"):
+                obj.setdefault(k, "")
+            return {k: str(obj.get(k, "")) for k in ("bloco2","bloco3","bloco4","rodape")}
+        except Exception:
+            pass
+    # último recurso: coloca tudo no rodapé
+    return {"bloco2": "", "bloco3": "", "bloco4": "", "rodape": txt.strip()}
+
 def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
                            tabela_texto: str, tabela_bloco1: str,
                            prompt_path: str = DEFAULT_PROMPT_PATH,
                            config_path: str = "") -> str:
     api_key = _env("GROQ_API_KEY", "")
     if not api_key:
-        return "Groq indisponível: defina GROQ_API_KEY no ambiente."
+        # retorna JSON mínimo
+        return json.dumps({
+            "bloco2": "", "bloco3": "", "bloco4": "",
+            "rodape": "Groq indisponível: defina GROQ_API_KEY no ambiente."
+        }, ensure_ascii=False)
 
     cfg_path = config_path or _env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG)
     groq_cfg, proc_cfg = _read_groq_config(cfg_path)
@@ -333,7 +390,7 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
     model = (groq_cfg.get("model") or "llama-3.1-70b-versatile").strip()
     temperature = float(groq_cfg.get("temperature", 0.2))
     top_p = float(groq_cfg.get("top_p", 1.0))
-    max_tokens = min(int(groq_cfg.get("max_completion_tokens", 4000)), 4000)
+    max_tokens = min(int(groq_cfg.get("max_completion_tokens", "4000")), 4000)
     stop = groq_cfg.get("stop") or None
     reasoning_effort = groq_cfg.get("reasoning_effort", "")
 
@@ -343,16 +400,28 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
     retry_backoff = float(proc_cfg.get("retry_backoff", 2.0))
 
     external_system_prompt, _ = _load_prompt_file(_env("PROMPT_PATH", prompt_path))
-    system_prompt = external_system_prompt or "Você é um assistente clínico objetivo. Responda em pt-BR."
+    # Força saída JSON estrita
+    system_prompt = (external_system_prompt or "Você é um assistente clínico objetivo. Responda em pt-BR.") + (
+        "\n\nSAÍDA OBRIGATÓRIA: responda EXCLUSIVAMENTE em JSON válido, SEM markdown, no schema:\n"
+        '{"bloco2": string, "bloco3": string, "bloco4": string, "rodape": string}\n'
+        "Não inclua comentários fora do JSON. Não use blocos de código. "
+        "Se faltar informação, deixe o campo vazio ou escreva 'NÃO ENCONTRADO NO HISTÓRICO'."
+    )
 
+    # ------ HISTÓRICO (com filtros para IA) ------
     records = list(full_payload.get("amostra") or [])
+    records = [r for r in records if not _no_show_row(r)]  # remove “não compareceu” para a IA
+
     df_all = pd.DataFrame.from_records(records) if records else pd.DataFrame()
     df_envio = sanitize_for_json(_filter_with_content(df_all))
     recs_envio = df_envio.to_dict(orient="records")
 
-    print(f"[Groq] Registros no JSON: {len(df_all)} | Enviados: {len(df_envio)}")
+    print(f"[Groq] Registros no JSON (após filtros): {len(df_envio)}")
     if not recs_envio:
-        return "Nenhum registro elegível para análise (queixa e conduta vazios em todos)."
+        return json.dumps({
+            "bloco2": "", "bloco3": "", "bloco4": "",
+            "rodape": "Nenhum registro elegível para análise (após filtros)."
+        }, ensure_ascii=False)
 
     vars_atual = to_python_tree(vars_atual)
     vars_str = json.dumps(vars_atual, ensure_ascii=False)
@@ -360,7 +429,7 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
     header = (
         "VARIÁVEIS DO ATENDIMENTO ATUAL (sem id, não salvo):\n"
         + vars_str +
-        "\n\nBLOCO_1_TABELA_FIXA (use EXACTAMENTE estas linhas no Bloco 1, sem acrescentar/remover):\n"
+        "\n\nBLOCO_1_TABELA_FIXA (use EXATAMENTE estas linhas no Bloco 1, sem acrescentar/remover):\n"
         + (tabela_bloco1 or "(sem registros)") +
         "\n\nTABELA_DE_REFERENCIA (apoio para os demais blocos):\n"
         + (tabela_texto or "(sem registros)") +
@@ -368,6 +437,7 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
         "1) O Bloco 1 deve repetir a BLOCO_1_TABELA_FIXA exatamente.\n"
         "2) Nos demais blocos, cite (POSTO, IDPRONTUARIO, DATA) e NÃO invente fatos/medicações.\n"
         "3) Compare a queixa atual com os históricos ao listar achados.\n"
+        "Responda SEMPRE em JSON no schema definido."
     )
 
     parts = []
@@ -379,7 +449,8 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
             "Tarefa: Resuma APENAS esta parte em bullets objetivos.\n"
             "- Liste (POSTO, IDPRONTUARIO, DATA) + queixa/conduta relevantes.\n"
             "- Relacione explicitamente com a queixa atual.\n"
-            "- NÃO invente fatos/medicações. Se não constar, diga 'não consta'."
+            "- NÃO invente fatos/medicações. Se não constar, diga 'não consta'.\n"
+            "NÃO RESPONDA AGORA; aguarde a consolidação final."
         )
         attempt = 0
         while True:
@@ -395,7 +466,10 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
             except Exception as e:
                 attempt += 1
                 if attempt > max_retries:
-                    return f"[Groq] Erro no chunk {k}/{n}: {e}"
+                    return json.dumps({
+                        "bloco2": "", "bloco3": "", "bloco4": "",
+                        "rodape": f"[Groq] Erro no chunk {k}/{n}: {e}"
+                    }, ensure_ascii=False)
                 wait = (retry_backoff ** (attempt - 1))
                 print(f"[Groq] Falha no chunk {k}/{n} ({e}). Retry {attempt}/{max_retries} em {wait:.1f}s.")
                 time.sleep(wait)
@@ -404,13 +478,12 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
 
     final_user = (
         f"Considere as VARIÁVEIS DO ATENDIMENTO ATUAL:\n{vars_str}\n\n"
-        "Consolide os resumos parciais abaixo em um relatório único no formato:\n"
-        "Bloco 1 — Resumo dos dez últimos atendimentos (REPRODUZA EXATAMENTE a BLOCO_1_TABELA_FIXA).\n"
-        "Bloco 2 — Queixa atual nos atendimentos anteriores (citar fontes).\n"
-        "Bloco 3 — Diagnóstico diferencial.\n"
-        "Bloco 4 — Sugestão de OBSERVAÇÃO e CONDUTA (sem inventar).\n"
-        "Rodapé — Itens sem evidência textual explícita.\n\n"
-        "Sempre cite evidências como (POSTO, IDPRONTUARIO, DATA).\n\n"
+        "Consolide os resumos parciais em um relatório ÚNICO no formato:\n"
+        '- "bloco2": texto da seção "Queixa atual nos atendimentos anteriores"\n'
+        '- "bloco3": texto da seção "Diagnóstico diferencial"\n'
+        '- "bloco4": texto da seção "Sugestão de OBSERVAÇÃO e CONDUTA"\n'
+        '- "rodape": itens sem evidência textual explícita\n\n'
+        "Responda SOMENTE com JSON válido no schema {bloco2,bloco3,bloco4,rodape}. Sem markdown, sem comentários.\n\n"
         + "\n\n---\n\n".join(parts)
     )
     try:
@@ -420,87 +493,38 @@ def analyze_json_with_groq(full_payload: dict, vars_atual: dict,
              {"role": "user", "content": final_user}],
             temperature, top_p, max_tokens, stop, reasoning_effort
         )
-        return final.choices[0].message.content.strip()
+        content = final.choices[0].message.content.strip()
+        # força JSON
+        blocks = _force_json_output(content)
+        return json.dumps(blocks, ensure_ascii=False)
     except Exception as e:
-        print(f"[Groq] Falha na consolidação ({e}). Retornando partes.")
-        return "# Consolidação (fallback)\n\n" + "\n\n".join(parts)
+        print(f"[Groq] Falha na consolidação ({e}). Retornando fallback JSON.")
+        return json.dumps({
+            "bloco2": "", "bloco3": "", "bloco4": "",
+            "rodape": f"# Consolidação (fallback)\n\n" + "\n\n".join(parts)
+        }, ensure_ascii=False)
 
-# ---------------- HTML helpers ----------------
-def html_escape(s: str) -> str:
-    return (s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;").replace("'","&#39;")
+# ---------------- Parsing da resposta da IA (JSON -> dict) ----------------
+def ai_text_to_blocks(ai_text: str) -> dict:
+    """Converte texto da IA em dict com chaves bloco2/3/4/rodape (sempre)."""
+    try:
+        obj = json.loads(ai_text)
+        return {
+            "bloco2": str(obj.get("bloco2", "")),
+            "bloco3": str(obj.get("bloco3", "")),
+            "bloco4": str(obj.get("bloco4", "")),
+            "rodape": str(obj.get("rodape", "")),
+        }
+    except Exception:
+        # último recurso
+        return {"bloco2": "", "bloco3": "", "bloco4": "", "rodape": ai_text.strip()}
 
-def render_bloco1_table_html(df_b1: pd.DataFrame) -> str:
-    rows = []
-    rows.append('<table border="1" cellpadding="6" cellspacing="0">')
-    rows.append("<thead><tr><th>idprontuario</th><th>posto</th><th>data</th><th>resumo</th></tr></thead>")
-    rows.append("<tbody>")
-    for _, r in df_b1.iterrows():
-        try:
-            idp = str(int(r["idprontuario"])) if pd.notna(r["idprontuario"]) else ""
-        except Exception:
-            idp = str(r["idprontuario"]) if r["idprontuario"] is not None else ""
-        rows.append(
-            "<tr>"
-            f"<td>{html_escape(idp)}</td>"
-            f"<td>{html_escape(str(r['posto']))}</td>"
-            f"<td>{html_escape(str(r['data']))}</td>"
-            f"<td>{html_escape(str(r['resumo']))}</td>"
-            "</tr>"
-        )
-    rows.append("</tbody></table>")
-    return "\n".join(rows)
-
-def split_blocks_from_ai(texto: str) -> dict:
-    """
-    Divide o texto da IA em blocos aproximados: Bloco 2, 3, 4 e Rodapé.
-    Mantém conteúdo como <p> (sem tentar reformatar listas).
-    """
-    if not texto:
-        return {"bloco2":"", "bloco3":"", "bloco4":"", "rodape": texto}
-    # normaliza
-    t = texto.replace("\r\n","\n")
-    # âncoras comuns do prompt
-    anchors = {
-        "bloco2": re.compile(r"(?is)bloco\s*2\s*[\-—]", re.IGNORECASE),
-        "bloco3": re.compile(r"(?is)bloco\s*3\s*[\-—]", re.IGNORECASE),
-        "bloco4": re.compile(r"(?is)bloco\s*4\s*[\-—]", re.IGNORECASE),
-        "rodape": re.compile(r"(?is)rodap[eé]", re.IGNORECASE),
-    }
-    # encontra índices
-    idx = {}
-    for k, rgx in anchors.items():
-        m = rgx.search(t)
-        idx[k] = m.start() if m else -1
-    # ordem dos blocos
-    order = ["bloco2", "bloco3", "bloco4", "rodape"]
-    segments = {}
-    # util p/ achar próximo índice maior
-    def next_cut(start_key):
-        pos = idx[start_key]
-        after = [idx[k] for k in order if idx[k] > pos]
-        return min(after) if after else len(t)
-    for k in order:
-        if idx[k] >= 0:
-            seg = t[idx[k]: next_cut(k)].strip()
-            segments[k] = seg
-        else:
-            segments[k] = ""
-    return segments
-
-def md_like_to_paragraphs(md: str) -> str:
-    """
-    Converte um texto (markdown simples) em <p> por linha não vazia.
-    Preserva bullets como texto normal.
-    """
-    if not md:
-        return "<p></p>"
-    parts = []
-    for line in md.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-        parts.append(f"<p>{html_escape(line)}</p>")
-    return "\n".join(parts)
+def paragraphs_text(md: str) -> str:
+    """Texto simples (mantém bullets), sem linhas vazias múltiplas."""
+    if not md or not md.strip():
+        return "NÃO ENCONTRADO NO HISTÓRICO"
+    lines = [ln.rstrip() for ln in md.split("\n") if ln.strip()]
+    return "\n".join(lines)
 
 # ---------------- CLI ----------------
 def parse_args():
@@ -515,8 +539,35 @@ def parse_args():
     p.add_argument("--groq-config", default=_env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG), help="Caminho do INI da Groq")
     return p.parse_args()
 
+def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
+    df = df_all.copy()
+    # aplica filtro “não compareceu” TAMBÉM no Bloco 1
+    mask_no_show = df.apply(lambda r: _no_show_row(r), axis=1)
+    df = df.loc[~mask_no_show].copy()
+
+    df["_dt_ini"] = pd.to_datetime(df["datainicioconsulta"], errors="coerce")
+    df = (
+        df.loc[df["_dt_ini"].notna(),
+               ["idprontuario","posto","_dt_ini","queixa","observacao","conduta"]]
+        .sort_values("_dt_ini", ascending=False).head(10).copy()
+    )
+    df["data"] = df["_dt_ini"].dt.strftime("%d/%m/%Y")
+
+    def _mk_resumo(r):
+        partes = [clean_text(r["queixa"]), clean_text(r["observacao"]), clean_text(r["conduta"])]
+        partes = [p for p in partes if p]
+        if not partes: return ""
+        s = ". ".join(partes).strip(" .")
+        return s + "."
+    df["resumo"] = df.apply(_mk_resumo, axis=1)
+    return df
+
 def main():
     ensure_dirs()
+    # saneamento a cada execução (remove arquivos >1h)
+    purge_old_files(JSON_DIR, 1)
+    purge_old_files(REPORTS_DIR, 1)
+
     args = parse_args()
 
     nome = args.nome or input("1) Nome completo do paciente: ").strip()
@@ -566,57 +617,34 @@ def main():
     for col in ["queixa", "observacao", "conduta", "especialidade", "profissional_atendente"]:
         df_all[col] = df_all[col].map(clean_text)
 
-    # ----- BLOCO 1 -----
-    df_all["_dt_ini"] = pd.to_datetime(df_all["datainicioconsulta"], errors="coerce")
-    df_b1 = (
-        df_all.loc[df_all["_dt_ini"].notna(), ["idprontuario", "posto", "_dt_ini", "queixa", "observacao", "conduta"]]
-        .sort_values("_dt_ini", ascending=False)
-        .head(10)
-        .copy()
-    )
-    df_b1["data"] = df_b1["_dt_ini"].dt.strftime("%d/%m/%Y")
-
-    def _mk_resumo(r):
-        partes = [clean_text(r["queixa"]), clean_text(r["observacao"]), clean_text(r["conduta"])]
-        partes = [p for p in partes if p]
-        if not partes:
-            return ""
-        s = ". ".join(partes).strip(" .")
-        return s + "."
-
-    df_b1["resumo"] = df_b1.apply(_mk_resumo, axis=1)
-
-    # Tabela texto fixa (Bloco 1) para IA
-    linhas_vis = ["idprontuario | posto | data | resumo"]
+    # ----- BLOCO 1 (últimos 10) -----
+    df_b1 = build_last10(df_all)
+    linhas_b1 = ["idprontuario | posto | data | resumo"]
     for _, r in df_b1.iterrows():
-        try:
-            idp = str(int(r["idprontuario"])) if pd.notna(r["idprontuario"]) else ""
-        except Exception:
-            idp = str(r["idprontuario"]) if r["idprontuario"] is not None else ""
-        linhas_vis.append(f'{idp} | {r["posto"]} | {r["data"]} | {r["resumo"]}')
-    tabela_bloco1_txt = "\n".join(linhas_vis)
+        idp = str(r["idprontuario"]) if r["idprontuario"] is not None else ""
+        linhas_b1.append(f'{idp} | {r["posto"]} | {r["data"]} | {r["resumo"]}')
+    tabela_bloco1_txt = "\n".join(linhas_b1)
 
-    # Salva Bloco 1 TXT
+    # Salva cópia do bloco 1 (TXT) — será limpo em <=1h
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     arq_b1 = os.path.join(REPORTS_DIR, f"bloco1_{ts}.txt")
     with open(arq_b1, "w", encoding="utf-8") as f:
         f.write(tabela_bloco1_txt)
-    print(f"\nArquivo do Bloco 1 salvo em: {arq_b1}")
 
-    # Tabela de referência para IA (com ISO e especialidade)
+    # Tabela de referência (ISO + especialidade) para apoio da IA
     def _to_iso(x):
         try:
             return pd.to_datetime(x).strftime("%Y-%m-%dT%H:%M:%S")
         except Exception:
             return str(x) if pd.notna(x) else "—"
-
-    cols_tab = ["idprontuario", "posto", "datainicioconsulta", "especialidade", "queixa", "observacao", "conduta"]
+    cols_tab = ["idprontuario","posto","datainicioconsulta","especialidade","queixa","observacao","conduta"]
     for c in cols_tab:
-        if c not in df_all.columns:
-            df_all[c] = ""
+        if c not in df_all.columns: df_all[c] = ""
     df_tab = df_all[cols_tab].copy()
     df_tab["datainicioconsulta"] = df_tab["datainicioconsulta"].apply(_to_iso)
     df_tab = df_tab.sort_values("datainicioconsulta", ascending=False).head(10).reset_index(drop=True)
+
+
     linhas_ref = ["idprontuario | posto | datainicioconsulta | especialidade | resumo_curto"]
     for _, r in df_tab.iterrows():
         resumo = " / ".join([clean_text(r["queixa"]), clean_text(r["observacao"]), clean_text(r["conduta"])])
@@ -634,7 +662,6 @@ def main():
     vars_atual = to_python_tree(vars_atual)
 
     # JSON (somente históricos)
-    df_json = sanitize_for_json(df_all.drop(columns=["_dt_ini"], errors="ignore"))
     payload = {
         "metadata": {
             "paciente_input": nome,
@@ -643,16 +670,15 @@ def main():
             "gerado_em": datetime.now().isoformat(),
             "registros": int(len(df_all)),
         },
-        "amostra": df_json.to_dict(orient="records"),
+        "amostra": sanitize_for_json(df_all).to_dict(orient="records"),
     }
     json_path = save_json(payload)
-    print(f"JSON gerado: {json_path}")
+    print(f"JSON: {os.path.basename(json_path)} (será limpo em ~1h)")
 
-    # Análise (pode vir em markdown-like)
-    sugestao_ia = ""
+    # Análise IA
     if api_choice == "groq":
         cfg_path = args.groq_config
-        print(f"\n[A] Enviando JSON para Groq com config: {cfg_path}")
+        print(f"[A] Enviando para Groq: {cfg_path}")
         try:
             sugestao_ia = analyze_json_with_groq(
                 payload,
@@ -663,55 +689,45 @@ def main():
                 config_path=cfg_path,
             )
         except Exception as e:
-            sugestao_ia = f"[ERRO] Falha na análise Groq: {e}"
+            sugestao_ia = json.dumps({"bloco2":"","bloco3":"","bloco4":"","rodape":f"[ERRO] Falha na análise Groq: {e}"},
+                                     ensure_ascii=False)
     elif api_choice == "openai":
-        sugestao_ia = "[INFO] Integração OpenAI não implementada neste CLI."
+        # ainda não implementado: devolve JSON válido
+        sugestao_ia = json.dumps({"bloco2":"","bloco3":"","bloco4":"",
+                                  "rodape":"[INFO] Integração OpenAI não implementada neste CLI."},
+                                 ensure_ascii=False)
     else:
-        sugestao_ia = "[ERRO] Provedor inválido. Use 'groq' ou 'openai'."
+        sugestao_ia = json.dumps({"bloco2":"","bloco3":"","bloco4":"",
+                                  "rodape":"[ERRO] Provedor inválido. Use 'groq' ou 'openai'."},
+                                 ensure_ascii=False)
 
-    # ---- Montagem do HTML completo (títulos em <h1>, conteúdos em <p>) ----
-    bloco1_html_table = render_bloco1_table_html(df_b1)
+    # --------- SAÍDA NO TERMINAL (APENAS TEXTO) ---------
+    blocos = ai_text_to_blocks(sugestao_ia)
 
-    # Divide blocos textuais da IA e converte p/ <p>
-    blocos = split_blocks_from_ai(sugestao_ia)
-    b2_html = md_like_to_paragraphs(blocos.get("bloco2",""))
-    b3_html = md_like_to_paragraphs(blocos.get("bloco3",""))
-    b4_html = md_like_to_paragraphs(blocos.get("bloco4",""))
-    rodape_html = md_like_to_paragraphs(blocos.get("rodape",""))
+    out_lines = []
+    out_lines.append("ÚLTIMOS 10 ATENDIMENTOS")
+    out_lines.append(tabela_bloco1_txt)
+    out_lines.append("")
+    out_lines.append("QUEIXA ATUAL NOS ATENDIMENTOS ANTERIORES")
+    out_lines.append(paragraphs_text(blocos.get("bloco2","")))
+    out_lines.append("")
+    out_lines.append("DIAGNÓSTICO DIFERENCIAL")
+    out_lines.append(paragraphs_text(blocos.get("bloco3","")))
+    out_lines.append("")
+    out_lines.append("SUGESTÃO DE OBSERVAÇÃO E CONDUTA")
+    out_lines.append(paragraphs_text(blocos.get("bloco4","")))
+    out_lines.append("")
+    out_lines.append("RODAPÉ")
+    out_lines.append(paragraphs_text(blocos.get("rodape","")))
+    out_lines.append("")
 
-    # Cabeçalho do relatório
-    head = (
-        "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-        "<title>Relatório de Atendimentos</title>"
-        "<style>body{font-family:Arial,Helvetica,sans-serif;line-height:1.4} "
-        "table{border-collapse:collapse;margin:8px 0;width:100%} "
-        "th,td{border:1px solid #ccc;padding:6px;vertical-align:top} "
-        "h1{font-size:18px;margin:12px 0 6px} p{margin:6px 0}</style>"
-        "</head><body>"
-    )
-    body = []
-    body.append(f"<h1>Bloco 1 — Resumo dos dez últimos atendimentos</h1>\n{bloco1_html_table}")
-    body.append(f"<h1>Bloco 2 — Queixa atual nos atendimentos anteriores</h1>\n{b2_html}")
-    body.append(f"<h1>Bloco 3 — Diagnóstico diferencial</h1>\n{b3_html}")
-    body.append(f"<h1>Bloco 4 — Sugestão de OBSERVAÇÃO e CONDUTA</h1>\n{b4_html}")
-    body.append(f"<h1>Rodapé</h1>\n{rodape_html}")
-    tail = "</body></html>"
+    print("\n".join(out_lines))
 
-    html_full = head + "\n".join(body) + tail
-
-    # Salva HTML e imprime no terminal (para API consumir)
-    arq_html = os.path.join(REPORTS_DIR, f"relatorio_{ts}.html")
-    with open(arq_html, "w", encoding="utf-8") as f:
-        f.write(html_full)
-
-    # IMPORTANTE: imprimir HTML bruto no terminal
-    print("\n" + html_full)
-
-    # -------- Limpeza do JSON --------
+    # -------- Limpeza opcional imediata do JSON --------
     if args.no_delete_json:
-        print("\nJSON mantido por opção de linha de comando (--no-delete-json).")
+        print("JSON mantido por opção de linha de comando (--no-delete-json).")
         return
-    opt = input("\nDeseja apagar o JSON gerado? (s/n): ").strip().lower()
+    opt = input("Deseja apagar o JSON gerado agora? (s/n): ").strip().lower()
     if opt == "s":
         try:
             os.remove(json_path)
@@ -719,14 +735,17 @@ def main():
         except Exception as e:
             print(f"Falha ao apagar JSON: {e}")
     else:
-        print("JSON mantido.")
+        print("JSON mantido (será limpo automaticamente em ~1h).")
 
-# ---------------- API helper ----------------
+# ---------------- API helper (texto simples) ----------------
 def executar_pipeline_api(
     nome: str, data_nascimento_mmddyyyy: str, queixa: str,
     provedor: Literal["groq", "openai"] = "groq", modelo: Optional[str] = None, like: bool = False
 ) -> dict:
     ensure_dirs()
+    purge_old_files(JSON_DIR, 1)
+    purge_old_files(REPORTS_DIR, 1)
+
     try:
         nasc_date = datetime.strptime(data_nascimento_mmddyyyy, "%m/%d/%Y").date()
     except ValueError as e:
@@ -749,43 +768,24 @@ def executar_pipeline_api(
                 df.insert(0, "posto", lbl)
                 frames.append(df)
     if not frames:
-        html = "<h1>Bloco 1 — Resumo dos dez últimos atendimentos</h1><p>Nenhum dado encontrado.</p>"
-        return {"ok": True, "registros": 0, "html": html}
+        return {"ok": True, "registros": 0, "texto": "ÚLTIMOS 10 ATENDIMENTOS\nNenhum dado encontrado.\n"}
 
-    # Normaliza e monta Bloco 1
+    # Normaliza
     df_all = pd.concat(frames, ignore_index=True)
     df_all.columns = [str(c).strip().lower() for c in df_all.columns]
-    for col in ["queixa", "observacao", "conduta", "especialidade", "profissional_atendente", "datainicioconsulta"]:
-        if col not in df_all.columns:
-            df_all[col] = None
-    for col in ["queixa", "observacao", "conduta", "especialidade", "profissional_atendente"]:
+    for col in ["queixa","observacao","conduta","especialidade","profissional_atendente","datainicioconsulta"]:
+        if col not in df_all.columns: df_all[col] = None
+    for col in ["queixa","observacao","conduta","especialidade","profissional_atendente"]:
         df_all[col] = df_all[col].map(clean_text)
 
-    df_all["_dt_ini"] = pd.to_datetime(df_all["datainicioconsulta"], errors="coerce")
-    df_b1 = (
-        df_all.loc[df_all["_dt_ini"].notna(), ["idprontuario", "posto", "_dt_ini", "queixa", "observacao", "conduta"]]
-        .sort_values("_dt_ini", ascending=False).head(10).copy()
-    )
-    df_b1["data"] = df_b1["_dt_ini"].dt.strftime("%d/%m/%Y")
-    def _mk_resumo(r):
-        partes = [clean_text(r["queixa"]), clean_text(r["observacao"]), clean_text(r["conduta"])]
-        partes = [p for p in partes if p]
-        if not partes:
-            return ""
-        s = ". ".join(partes).strip(" .")
-        return s + "."
-    df_b1["resumo"] = df_b1.apply(_mk_resumo, axis=1)
-
+    # Bloco 1 (com filtro “não compareceu”)
+    df_b1 = build_last10(df_all)
     linhas_b1 = ["idprontuario | posto | data | resumo"]
     for _, r in df_b1.iterrows():
-        try:
-            idp = str(int(r["idprontuario"])) if pd.notna(r["idprontuario"]) else ""
-        except Exception:
-            idp = str(r["idprontuario"]) if r["idprontuario"] is not None else ""
+        idp = str(r["idprontuario"]) if r["idprontuario"] is not None else ""
         linhas_b1.append(f'{idp} | {r["posto"]} | {r["data"]} | {r["resumo"]}')
     tabela_bloco1_txt = "\n".join(linhas_b1)
 
-    df_json = sanitize_for_json(df_all.drop(columns=["_dt_ini"], errors="ignore"))
     payload = {
         "metadata": {
             "paciente_input": nome,
@@ -794,40 +794,45 @@ def executar_pipeline_api(
             "gerado_em": datetime.now().isoformat(),
             "registros": int(len(df_all)),
         },
-        "amostra": df_json.to_dict(orient="records"),
+        "amostra": sanitize_for_json(df_all).to_dict(orient="records"),
     }
     vars_atual = {"nome_paciente": nome, "data_nascimento": nasc_date.isoformat(),
                   "queixa_atual": queixa, "data_hora_atendimento": datetime.now().isoformat()}
 
-    tabela_texto_ref = ""  # não necessário para o retorno API enxuto
-    sugestao_ia = ""
     if provedor == "groq":
         sugestao_ia = analyze_json_with_groq(
             payload,
             vars_atual=vars_atual,
-            tabela_texto=tabela_texto_ref,
+            tabela_texto="",  # simples
             tabela_bloco1=tabela_bloco1_txt,
             prompt_path=_env("PROMPT_PATH", DEFAULT_PROMPT_PATH),
             config_path=_env("GROQ_CONFIG", DEFAULT_GROQ_CONFIG),
         )
     else:
-        sugestao_ia = "[INFO] Integração OpenAI não implementada."
+        # OpenAI ainda não implementado -> garante JSON
+        sugestao_ia = json.dumps({"bloco2":"","bloco3":"","bloco4":"",
+                                  "rodape":"[INFO] Integração OpenAI não implementada."},
+                                 ensure_ascii=False)
 
-    html = []
-    html.append("<!DOCTYPE html><html><head><meta charset='utf-8'><title>Relatório</title></head><body>")
-    html.append("<h1>Bloco 1 — Resumo dos dez últimos atendimentos</h1>")
-    html.append(render_bloco1_table_html(df_b1))
-    blocos = split_blocks_from_ai(sugestao_ia)
-    html.append("<h1>Bloco 2 — Queixa atual nos atendimentos anteriores</h1>")
-    html.append(md_like_to_paragraphs(blocos.get("bloco2","")))
-    html.append("<h1>Bloco 3 — Diagnóstico diferencial</h1>")
-    html.append(md_like_to_paragraphs(blocos.get("bloco3","")))
-    html.append("<h1>Bloco 4 — Sugestão de OBSERVAÇÃO e CONDUTA</h1>")
-    html.append(md_like_to_paragraphs(blocos.get("bloco4","")))
-    html.append("<h1>Rodapé</h1>")
-    html.append(md_like_to_paragraphs(blocos.get("rodape","")))
-    html.append("</body></html>")
-    return {"ok": True, "registros": int(len(df_all)), "html": "\n".join(html)}
+    blocos = ai_text_to_blocks(sugestao_ia)
+    parts = []
+    parts.append("ÚLTIMOS 10 ATENDIMENTOS")
+    parts.append(tabela_bloco1_txt)
+    parts.append("")
+    parts.append("QUEIXA ATUAL NOS ATENDIMENTOS ANTERIORES")
+    parts.append(paragraphs_text(blocos.get("bloco2","")))
+    parts.append("")
+    parts.append("DIAGNÓSTICO DIFERENCIAL")
+    parts.append(paragraphs_text(blocos.get("bloco3","")))
+    parts.append("")
+    parts.append("SUGESTÃO DE OBSERVAÇÃO E CONDUTA")
+    parts.append(paragraphs_text(blocos.get("bloco4","")))
+    parts.append("")
+    parts.append("RODAPÉ")
+    parts.append(paragraphs_text(blocos.get("rodape","")))
+    parts.append("")
+    return {"ok": True, "registros": int(len(df_all)), "texto": "\n".join(parts)}
 
+# ---------------- Entry ----------------
 if __name__ == "__main__":
     main()

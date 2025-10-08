@@ -7,21 +7,25 @@ REGRAS DE AUDITORIA (OBRIGATÓRIAS)
 3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO NO HISTÓRICO”.
 
 SAÍDA OBRIGATÓRIA
-Bloco 1 — Titulo: Resumo dos dez últimos atendimentos.
+Seguir as regras:
+Titulo: Resumo dos dez últimos atendimentos.
 Entregue: Liste os dez mais recentes atendimentos que o paciente teve. monte em formato de tabela considerando o formato: “id ({idprontuario} – {posto} – {datainicioconsulta} – {especialidade} e o ultimo, resumo, campo que nao existe no json, que e o resumo curto do atendimento em si, considerando os campos {queixa}, {observacao} e {conduta})”. Como o bloco um e apenas um resumo do atendimento, nao existe motivo para cair na regra tres, ja que voce nao vai inventar ou inferir, apenas resumir. Se nao houverem 10 atendimentos, liste os que tiverem, somente.
 
-Bloco 2 — Titulo: Queixa atual nos atendimentos anteriores: 
+Seguir as regras:
+Titulo: Queixa atual nos atendimentos anteriores: 
 verifique todos os registro de atendimentos anteriores e traga os que possuem relacionamento direto, com mais de 70% de precisao de serem similares a queixa atual. 
 Entregue: uma linha por prontuario: 
 “id ({idprontuario} – {posto} – {data} –  resumo curto do atendimento em si, considerando os campos {queixa}, {observacao} e {conduta})” cite, como no bloco 1, os prontuarios que possuem relacao com a queixa atual. uma linha por atendimento. 
 
-Bloco 3 — Título: Diagnóstico diferencial:
+Seguir as regras:
+Título: Diagnóstico diferencial:
 diagnostico diferencial para a queixa atual. Considerar dados dos atendimentos anteriores, se relevantes. 
 
-Bloco 4 — Sugestão de preenchimento dos campos OBSERVAÇÃO e CONDUTA (Considerando a queixa e o diagnostico diferencial, e considerando literalmente o conteúdo presente no JSON, mas, em relação a queixa atual).
+Não seguir as regras:
+Título: Sugestão de preenchimento dos campos OBSERVAÇÃO e CONDUTA (Considerando a queixa e o diagnostico diferencial, o bloco 4 não possui as mesmas regras, aqui você pode pensar e evoluir como médico. 
 
 Rodapé:
-  - Itens sem evidência textual explícita: “NENHUM” ou liste “NÃO ENCONTRADO NO HISTÓRICO”.
+  - Itens sem evidência textual explícita: “NENHUM” ou liste “NÃO ENCONTRADO”.
 
 Validação final:
 - Se citar algo e não houver fonte entre parênteses, remova a citação.

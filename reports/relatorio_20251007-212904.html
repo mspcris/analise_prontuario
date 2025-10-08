@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Relatório de Atendimentos</title>
+<style>
+:root{
+  --bg:#0b1020;--card:#121833;--muted:#8ea0ff;--text:#e6e9ff;--ring:#5b7cff;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,#0a0f1f 0%,#111735 100%);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;line-height:1.5}
+.container{max-width:1100px;margin:28px auto;padding:0 16px}
+h1{font-size:1.125rem;margin:18px 0 8px 0;font-weight:700;letter-spacing:.3px}
+p{margin:0 0 10px 0;color:#e6e9ffcc}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);backdrop-filter: blur(6px)}
+.card-inset{padding:16px 18px}
+.table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.table th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#c7cffdcc;text-align:left;padding:10px 12px}
+.table td{padding:14px 12px;background:var(--card);border:1px solid rgba(255,255,255,.08);border-left:none;border-right:none}
+.table tr{transition:transform .2s ease, box-shadow .2s ease}
+.table tr:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.25)}
+.table td:first-child,.table th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px;border-left:1px solid rgba(255,255,255,.08)}
+.table td:last-child,.table th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px;border-right:1px solid rgba(255,255,255,.08)}
+.badge{display:inline-block;padding:.22rem .5rem;border-radius:999px;background:rgba(91,124,255,.18);border:1px solid rgba(91,124,255,.4);color:#cdd6ff;font-size:.75rem}
+.mono{font-variant-numeric:tabular-nums;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+hr{border:0;height:1px;background:linear-gradient(90deg,transparent,#2b3568,transparent);margin:18px 0}
+.row{position:relative}
+.link-wrap{position:relative}
+.idbtn{opacity:0;transition:opacity .15s ease, transform .15s ease; transform: translateY(2px);
+  display:inline-block;padding:.35rem .55rem;border-radius:10px;border:1px solid rgba(91,124,255,.45);
+  background:rgba(91,124,255,.10);text-decoration:none;color:#dfe5ff}
+.row:hover .idbtn{opacity:1;transform: translateY(0)}
+.idbtn:hover{background:rgba(91,124,255,.22)}
+abbr[title]{text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.35);cursor:help}
+.kv{margin:6px 0 0 0}
+.kv span{display:inline-block;min-width:130px;color:#9fb0ff}
+.small{opacity:.8;font-size:.85rem}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bloco 1 — Últimos 10 atendimentos</h1><p class='small'>Resumo (queixa + observação + conduta). Passe o mouse sobre o id para visualizar o botão.</p><div class="card"><div class="card-inset"><table class="table">
+      <thead>
+        <tr>
+          <th>idprontuário</th>
+          <th>posto</th>
+          <th>data</th>
+          <th>resumo</th>
+        </tr>
+      </thead><tbody>
+
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#203168" data-id="203168" aria-label="Abrir prontuário 203168">203168</a></td>
+            <td><span class="badge">B</span></td>
+            <td class="mono">27/05/2025</td>
+            <td>ROTINA. <abbr title="raio x">RX</abbr> OD +1,00 -1,00 80°. OE +1,00 -1,25 110° (1,0 J1 <abbr title="abertura ocular">AO</abbr>). BIO OK. TA 18/18. <abbr title="ferida operatória">FO</abbr> OK. OCULOS.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#7742754" data-id="7742754" aria-label="Abrir prontuário 7742754">7742754</a></td>
+            <td><span class="badge">R</span></td>
+            <td class="mono">31/03/2025</td>
+            <td>O paciente não compareceu <abbr title="aborto">a</abbr> chamada.. O paciente não compareceu <abbr title="aborto">a</abbr> chamada.. O paciente não compareceu <abbr title="aborto">a</abbr> chamada.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#51492585" data-id="51492585" aria-label="Abrir prontuário 51492585">51492585</a></td>
+            <td><span class="badge">A</span></td>
+            <td class="mono">29/03/2025</td>
+            <td><abbr title="ultrassonografia. Válido também US">USG</abbr> DE PUNHO DIR=TENOSSINOVITE//. <abbr title="ultrassonografia. Válido também US">USG</abbr> DE MAO DIRTENOSSINOVITE ESTENOSANTE 2QDIR. DIPROSPAN <abbr title="intramuscular">IM</abbr>=TILATIL 20 IM/TALA DE GESSO=<abbr title="eletroneuromiografia">ENMG</abbr> DE <abbr title="membros inferiores">MMII</abbr>=NIVUX=KETTO.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#51490436" data-id="51490436" aria-label="Abrir prontuário 51490436">51490436</a></td>
+            <td><span class="badge">A</span></td>
+            <td class="mono">26/03/2025</td>
+            <td>PACIENTE TROUXE OS EXAMES SOLICITADOS. US DE PUNHO D- TENOSINOVITE DO 3,4 TUNEIS OSTEOFIBROSOS , TENOSINOVITE DOS FLEXORES DIGITAIS SUPERFICIAIS <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> PROFUNDOS / NERVO MEDIANO ESPESSADO US DE MAO <abbr title="direito(a), também admitido quando seguido de siglas diagnósticas ou anatômicas.">D</abbr> TENOSINOVITE ESTENOSANTE DO 2 QD PFR NEGATIVAS. <abbr title="eletroneuromiografia">ENMG</abbr> DE <abbr title="Ministério da Saúde">MS</abbr> / PRESCREVO AINES , AINES TOPICO , FISIOTERAPIA , FLEX HA , CELESTONE 0,5 MG.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#7740498" data-id="7740498" aria-label="Abrir prontuário 7740498">7740498</a></td>
+            <td><span class="badge">R</span></td>
+            <td class="mono">25/03/2025</td>
+            <td>USG. USG.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#319587" data-id="319587" aria-label="Abrir prontuário 319587">319587</a></td>
+            <td><span class="badge">N</span></td>
+            <td class="mono">21/03/2025</td>
+            <td>PACIENTE REFERE ARTRALGIA EM PUNHO DIREITO , MAO DIREITA <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> 2Q <abbr title="direito(a), também admitido quando seguido de siglas diagnósticas ou anatômicas.">D</abbr> HA 3 MESES. PUNHO <abbr title="direito(a), também admitido quando seguido de siglas diagnósticas ou anatômicas.">D</abbr> DOR COM LIMITAÇAO DE MOVIMENTOS. US DE PUNHO <abbr title="direito(a), também admitido quando seguido de siglas diagnósticas ou anatômicas.">D</abbr> / PFR / US DE MAO DIREITA / AGUARDO EXAMES.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#7696422" data-id="7696422" aria-label="Abrir prontuário 7696422">7696422</a></td>
+            <td><span class="badge">R</span></td>
+            <td class="mono">14/11/2024</td>
+            <td>DISGLICEMIA + DISLIPIDEMIA. # PELA ENDOCRINOLOGIA - 39 ANOS # HIPOTIREOIDISMO # PURAN <abbr title="tetraiodotironina ou tiroxina">T4</abbr> 75 MCG/DIA. # DISGLICEMIA # <abbr title="tratamento">TTO</abbr> NÃO-MEDICAMENTOSO # HF DE <abbr title="diabetes mellitus">DM</abbr> (<abbr title="pressão arterial invasiva">PAI</abbr> <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> TIO MATERNO) # NEGA <abbr title="Infarto agudo do miocárdio">IAM</abbr>, <abbr title="acidente vascular encefálico. Também permitido AVC (acidente vascular cerebral), quando a lesão for no cérebro.">AVE</abbr>, DAP. PACIENTE RETORNA PARA REAVALIAÇÃO <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> PARA AVALIAÇÃO DE GLICEMIA. APÓS ABANDONO DE SEGUIMENTO - ÚLTIMA CONSULTA EM AGOSTO/2022. 04/10/2024 - <abbr title="hemoglobina">HB</abbr> 13,1, HCT 40 LEU 7087, PLA 232000, <abbr title="parada cadiorrespiratória">PCR</abbr> 28. 23/06/2024 - ÁCIDO ÚRICO 3,0, CREATININA 0,92, GLICOSE 92, COLT 93, <abbr title="sigla em inglês para: lipoproteína de alta densidade">HDL</abbr> 44, <abbr title="sigla em inglês para: lipoproteína de baixa densidade">LDL</abbr> 37, <abbr title="Sigla em inglês para: lipoproteína de muito baixa densidade">VLDL</abbr> 12, TG 60, URÉIA 22, <abbr title="hemoglobina">HB</abbr> 12,4, HCT 37,6, LEU 6215, PLA 209000, TESTOSTERONA TOTAL 26, FERRITINA 45,9, ÁCIDO FÓLICO 14,2, HBA1C 5,8 (HPLC), GME 119, <abbr title="Sigla em inglês para: hormônio tireoestimulante. Preferível em lugar do equivalente em português: HTE, devido ao amplo uso.">TSH</abbr> 4,13 (0,4-4,3), <abbr title="sigla em inglês para hormônio folículo estimulante">FSH</abbr> 6,5, <abbr title="Sigla em ingês para hormônio luteinizante">LH</abbr> 8,6, T4L 1,18 (0,7-1,8), TESTOSTERONA LIVRE 0,54, VIT B12 311, 25-OH-VIT <abbr title="direito(a), também admitido quando seguido de siglas diagnósticas ou anatômicas.">D</abbr> 26,3. EXAME FÍSICO: NADA DIGNO DE NOTA. <abbr title="frequência cardíaca">FC</abbr> 75 BPM, <abbr title="frequência respiratória">FR</abbr> 12IRPM, <abbr title="pressão arterial">PA</abbr> 100X70 MMHG TIREÓIDE NORMOPALPÁVEL.. SOLICITO <abbr title="Sigla em inglês para: hormônio tireoestimulante. Preferível em lugar do equivalente em português: HTE, devido ao amplo uso.">TSH</abbr>, T4L, GLI, HBA1C PARA 4-6 SEMANAS. SOLICITO <abbr title="ultrassonografia. Válido também US">USG</abbr> DE TIREÓIDE. OPTO POR NÃO INICIAR GLIFAGE XR POR ORA: IDADE < 60 ANOS, PORÉM GJ < 110, HBA1C < 6,0, <abbr title="índice de massa corpórea">IMC</abbr> < 35 KG/M2. AUMENTO PURAN <abbr title="tetraiodotironina ou tiroxina">T4</abbr> PARA 88 MCG/DIA - TENTO COLOCAR <abbr title="Sigla em inglês para: hormônio tireoestimulante. Preferível em lugar do equivalente em português: HTE, devido ao amplo uso.">TSH</abbr> < 2,5, VISTO SINTOMAS DE HIPOTIREOIDISMO ATUAL. PRESCREVO REFORGAN 500 MG/DIA <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> CREATINA 5G/DIA (0,07 MG/KG/DIA). ORIENTAÇÕES GERAIS.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#51393433" data-id="51393433" aria-label="Abrir prontuário 51393433">51393433</a></td>
+            <td><span class="badge">A</span></td>
+            <td class="mono">06/10/2024</td>
+            <td>PACIENTE COMPARECE PARA AVALIAÇÃO DE EXAMES.REFERE DISÚRIA, POLACIÚRIA HÁ 3 DIAS.. PACIENTE EM <abbr title="bom estado geral">BEG</abbr>, <abbr title="lúcido e orientado temporoespacialmente">LOTE</abbr>, CORADO, HIDRATADO, ACIANÓTICO, ANICTÉRICO, AFEBRIL, EUPNEICO EM <abbr title="aparelho respiratório">AR</abbr> AMBIENTE <abbr title="aparelho cardiovascular">ACV</abbr>: <abbr title="ritmo cardíaco regular">RCR</abbr> EM <abbr title="dois tempos">2T</abbr>, <abbr title="bulhas normofonéticas">BNF</abbr>, SEM SOPROS <abbr title="aparelho respiratório">AR</abbr>: <abbr title="murmúrio vesicular universalmente audível">MVUA</abbr> SEM <abbr title="ruídos adventícios">RA</abbr> SAT <abbr title="oxigênio">O2</abbr>:99%. PRESCREVO NITROFURANTOINA 100 <abbr title="magnésio, sendo também permitido: Mg++">MG</abbr> 6/6H DURANTE 7 DIAS, <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> PYRIDIUM DURANTE 2 DIAS.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#51392730" data-id="51392730" aria-label="Abrir prontuário 51392730">51392730</a></td>
+            <td><span class="badge">A</span></td>
+            <td class="mono">04/10/2024</td>
+            <td>PACIENTE ALEGA CEFALEIA EM REGIÃO FRONTAL, CONGESTÃO NASAL <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> FEBRE DE 38C. ALEGA TAMBEM MIALGIA <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> ADINAMIA.ALEGA NAUSEAS SEM VOMITO. ALEGA EPISODIOS DE DIARREIA TAX 36,5 HGT138 <abbr title="pressão arterial">PA</abbr> 90 X50. ACORDADO, CONSCIENTE, DEAMBULANDO, ANICTÉRICO, ACIANÓTICO, INTERAGINDO COM EXAMINADOR, HIDRATADO, EUPNEICO EM <abbr title="aparelho respiratório">AR</abbr> AMBIENTE.RCR <abbr title="dois tempos">2T</abbr> BNF. <abbr title="murmúrio vesicular universalmente audível">MVUA</abbr> <abbr title="senhora">SRA.</abbr> <abbr title="abdome">ABD</abbr> FLACIDO, INDOLOR, PERISTALTICO, SEM VICEROMEGALIAS.MMII SEM EDEMA, PANTURRILHAS LIVRES. EXAME NEUROLÓGICO PUPILAS ISOFOTOREAGENTES, SEM RIGIDEZ DE NUCA, MOBILIZANDO OS 4 MEMBROS COM FORCA PRESERVADA. ONDANSETRONA <abbr title="intravenoso">IV</abbr> + CETOPROFENO <abbr title="intravenoso">IV</abbr> + SF0,9%500 <abbr title="mililitro(s)">ML</abbr> IV. FAÇO RECEITA COM PRENI + WINTER AP. AGUARDO RETORNO COM EXAME PARA AVALIAR NECESSIDADE DE ATB.</td>
+          </tr>
+          <tr class="row">
+            <td class="link-wrap"><a class="idbtn mono" href="#51351223" data-id="51351223" aria-label="Abrir prontuário 51351223">51351223</a></td>
+            <td><span class="badge">A</span></td>
+            <td class="mono">05/08/2024</td>
+            <td>PACIENTE PORTANDO RESULTADO DE EXAMES. <abbr title="ultrassonografia. Válido também US">USG</abbr> <abbr title="taquicardia ventricular">TV</abbr> ENDOMETRIO 10 <abbr title="membros">MM</abbr> OVD <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> OVE DENTRO DA NORMALIDADE FSL, <abbr title="ultrassonografia. Válido também US">USG</abbr> DAS MAMAS MAMA ESQUERDA DUAS IMAGENS CISTICAS <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">E</abbr> MAMA DIREITA BIRADS 1 , MAMGRAFIA BIRADS 2. PACIENTE COM ENXAQUECA PERSISTENTE.</td>
+          </tr>
+</tbody></table></div></div><hr/><h1>Bloco 2 — Queixa atual nos atendimentos anteriores</h1><p>Bloco 2 — Queixa atual nos atendimentos anteriores**</p>
+<p>- 51392730 – <abbr title="aborto">A</abbr> – 04/10/2024 – Queixa: “CEFALEIA EM REGIÃO FRONTAL …” (Posto <abbr title="aborto">A</abbr>, <abbr title="intradérmico">id</abbr> 51392730, data 04/10/2024)</p>
+<p>- 51205363 – <abbr title="aborto">A</abbr> – 19/11/2023 – Queixa: “… CEFALEIA HÁ 3 DIAS …” (Posto <abbr title="aborto">A</abbr>, <abbr title="intradérmico">id</abbr> 51205363, data 19/11/2023)</p>
+<p>*(Ambos apresentam cefaleia, correspondendo à queixa atual “dor de cabeça”).*</p>
+<p>---</p>
+<p>**</p><hr/><h1>Bloco 3 — Diagnóstico diferencial</h1><p>Bloco 3 — Diagnóstico diferencial**</p>
+<p>- Sinusite aguda – **NÃO ENCONTRADO NO HISTÓRICO**</p>
+<p>- Cefaleia tensional – **NÃO ENCONTRADO NO HISTÓRICO**</p>
+<p>- Enxaqueca – **NÃO ENCONTRADO NO HISTÓRICO**</p>
+<p>- Infecção viral do trato respiratório superior – **NÃO ENCONTRADO NO HISTÓRICO**</p>
+<p>*(Nenhum diagnóstico diferencial está explicitamente registrado no histórico fornecido).*</p>
+<p>---</p>
+<p>**</p><hr/><h1>Bloco 4 — Sugestão de OBSERVAÇÃO e CONDUTA</h1><p>Bloco 4 — Sugestão de OBSERVAÇÃO <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">e</abbr> CONDUTA**</p>
+<p>**Observação sugerida**</p>
+<p>- Avaliar padrão, intensidade, localização <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">e</abbr> fatores desencadeantes da dor de cabeça.</p>
+<p>- Verificar presença de sinais de alerta (febre > 38 °C, rigidez de nuca, alterações neurológicas).</p>
+<p>- Investigar sintomas associados (congestão nasal, tosse, dor de garganta, náuseas).</p>
+<p>**Conduta sugerida**</p>
+<p>1. **Exame físico completo**, incluindo avaliação neurológica <abbr title="esquerdo(a), também admitido quando seguido de siglas diagnósticas ou anatômicas">e</abbr> otorrinolaringológica.</p>
+<p>2. **Medicação sintomática**:</p>
+<p>- Analgésico/anti‑inflamatório (ex.: dipirona ou ibuprofeno) conforme tolerância.</p>
+<p>- <abbr title="sonda enteral">Se</abbr> houver congestão nasal, considerar descongestionante tópico ou oral.</p>
+<p>3. **Orientações**: hidratação adequada, repouso, evitar gatilhos conhecidos (ex.: luz forte, estresse).</p>
+<p>4. **Reavaliação** em 48‑72 <abbr title="hora">h</abbr> ou antes <abbr title="sonda enteral">se</abbr> surgirem sinais de alarme.</p>
+<p>5. **Encaminhamento** para neurologia ou otorrinolaringologia caso <abbr title="aborto">a</abbr> dor persista > 7 dias ou haja piora.</p>
+<p>---</p>
+<p>**</p><hr/><h1>Rodapé</h1><p>Rodapé**</p>
+<p>- Itens sem evidência textual explícita: **NÃO ENCONTRADO NO HISTÓRICO**.</p>
+    <p class="kv"><span>Gerado em:</span> 2025-10-07 21:29</p>
+  </div>
+</body>
+</html>
