@@ -30,5 +30,7 @@ p.pacienteatendido,
 m.Nome as profissional_atendente 
 from cad_prontuario p
 left join cad_medico m on m.idMedico = p.idmedico
-where paciente = ? and p.DataNascimento = ?
-and p.desativado = 0
+where paciente = ? and p.DataNascimento = ? and  and p.DataInicioConsulta >= ?
+and p.DataInicioConsulta is not null and p.DataFimConsulta is not null 
+and isNull(falta,0) = 0
+and p.desativado = 0

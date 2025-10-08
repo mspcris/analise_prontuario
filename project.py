@@ -3,7 +3,8 @@
 project.py — Busca prontuários multi-postos, coleta resultados de exames (DB + CSV fallback) e gera análise via Groq.
 - PROMPT: ./prompts/prompt.txt
 - MODELOS (.ini): ./groq_modelos/*.ini (ordem pelo prefixo numérico 1-*, 2-*, 3-*, 4-*)
-- Consultas por posto (A,N,X,...) + EXAMES via ./sql/select_resultado_exames.sql (igual para todos)
+- Consultas por posto com 1 SQL único: ./sql/select_prontuarios.sql
+- Exames via ./sql/select_resultado_exames.sql (igual para todos os postos)
 - Se EXAMES do DB falhar/ficar vazio, lê CSVs em ./reports (exames*.csv) e filtra por paciente + nascimento
 - Envia histórico em CHUNKS (map→reduce) e inclui EXAMES (compactados) no prompt
 - Saída: APENAS JSON (inclui "EXAMES_RESULTADOS" e "exames_csv")
@@ -34,6 +35,7 @@ PROMPTS_DIR     = os.path.join(BASE_DIR, "prompts")
 REPORTS_DIR     = os.path.join(BASE_DIR, "reports")
 PROMPT_FILE     = os.path.join(PROMPTS_DIR, "prompt.txt")
 GROQ_MODELS_DIR = os.path.join(BASE_DIR, "groq_modelos")
+PRONT_SQL_FILE  = os.path.join(SQL_DIR, "select_prontuarios.sql")
 EXAMS_SQL_FILE  = os.path.join(SQL_DIR, "select_resultado_exames.sql")
 
 POSTOS = ["A", "N", "X", "Y", "B", "R", "P", "C", "D", "G", "I", "J", "M"]
@@ -90,6 +92,17 @@ def clean_text(s: Optional[str]) -> str:
 def strip_accents(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
 
+def _read_file_any_encoding(path: str) -> str:
+    encs = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
+    for enc in encs:
+        try:
+            with open(path, "r", encoding=enc) as f:
+                return f.read()
+        except Exception:
+            continue
+    with open(path, "rb") as f:
+        return f.read().decode("utf-8", errors="ignore")
+
 # ---------------- Conexão DB ----------------
 def build_conn_str(host, base, user, pwd, port, encrypt, trust_cert, timeout) -> str:
     server = f"tcp:{host},{port or '1433'}"
@@ -122,23 +135,28 @@ def build_conns_from_env():
 def make_engine(odbc_conn_str: str):
     return create_engine(f"mssql+pyodbc:///?odbc_connect={quote_plus(odbc_conn_str)}", pool_pre_ping=True)
 
-def load_sql_for_posto(posto: str) -> str:
-    path = os.path.join(SQL_DIR, f"{posto}.sql")
-    if os.path.isfile(path):
-        with open(path, "r", encoding="utf-8") as f:
-            sql = f.read().strip()
-        return sql[:-1] if sql.endswith(";") else sql
-    return (
-        "SELECT "
-        "p.idprontuario, p.idcliente, p.iddependente, p.matricula, p.idendereco, "
-        "p.paciente, p.idade, p.datanascimento, p.peso, p.altura, "
-        "p.parterialinicio, p.parterialfim, p.doencascronicas, p.medicaoanterior, "
-        "p.queixa, p.conduta, p.desativado, p.datainicioconsulta, p.datafimconsulta, "
-        "p.idmedico, p.observacao, p.informacao, p.temperatura, p.bpm, "
-        "p.idespecialidade, p.especialidade, p.nomesocial, p.pacienteatendido, "
-        "m.Nome AS profissional_atendente "
-        "FROM cad_prontuario p LEFT JOIN cad_medico m ON m.idMedico = p.idmedico"
-    )
+def load_prontuario_sql() -> str:
+    """
+    Lê o SQL único de prontuários (sql/select_prontuarios.sql) e
+    normaliza parâmetros posicionais (?) para nomeados (:paciente, :nasc).
+    """
+    path = PRONT_SQL_FILE
+    if not os.path.isfile(path):
+        return (
+            "SELECT p.idprontuario, p.idcliente, p.iddependente, p.matricula, p.idendereco, "
+            "p.paciente, p.idade, p.datanascimento, p.peso, p.altura, "
+            "p.parterialinicio, p.parterialfim, p.doencascronicas, p.medicaoanterior, "
+            "p.queixa, p.conduta, p.desativado, p.datainicioconsulta, p.datafimconsulta, "
+            "p.idmedico, p.observacao, p.informacao, p.temperatura, p.bpm, "
+            "p.idespecialidade, p.especialidade, p.nomesocial, p.pacienteatendido, "
+            "m.Nome AS profissional_atendente "
+            "FROM cad_prontuario p LEFT JOIN cad_medico m ON m.idMedico = p.idmedico "
+            "WHERE p.paciente = :paciente AND CAST(p.DataNascimento AS date) = :nasc AND p.desativado = 0"
+        )
+    txt = _read_file_any_encoding(path).strip()
+    if "?" in txt and ":paciente" not in txt:
+        txt = txt.replace("?", ":paciente", 1).replace("?", ":nasc", 1)
+    return txt
 
 def wrap_with_filters(base_sql: str, use_like: bool) -> text:
     if use_like:
@@ -157,7 +175,7 @@ def wrap_with_filters(base_sql: str, use_like: bool) -> text:
 
 def query_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date, use_like=False) -> pd.DataFrame:
     print(f"[{label}] Conectando...")
-    base_sql = load_sql_for_posto(label)
+    base_sql = load_prontuario_sql()          # usa o arquivo único
     sql = wrap_with_filters(base_sql, use_like=use_like)
     params = {"paciente": paciente.strip(), "nasc": nasc_date}
     try:
@@ -171,20 +189,8 @@ def query_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date, use_li
         return pd.DataFrame()
 
 # ---------- Exames ----------
-def _read_file_any_encoding(path: str) -> str:
-    encs = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
-    for enc in encs:
-        try:
-            with open(path, "r", encoding=enc) as f:
-                return f.read()
-        except Exception:
-            continue
-    with open(path, "rb") as f:
-        return f.read().decode("utf-8", errors="ignore")
-
 def load_exam_sql() -> str:
     if not os.path.isfile(EXAMS_SQL_FILE):
-        # fallback seguro
         return (
             "select p.datanascimento, lsri.* "
             "from vw_Cad_LancamentoServicoResultadoItem lsri "
@@ -210,7 +216,6 @@ def query_exams_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date) 
         print(f"[{label}-EX] {('Nenhum resultado' if df.empty else str(len(df))+' resultado(s)')}")
         return df
     except Exception as e:
-        # mensagem curta (evita stack imenso)
         msg = str(e)
         if "916" in msg or "no contexto de segurança atual" in msg:
             print(f"[{label}-EX] Sem permissão para ler exames (916). Ignorado.")
@@ -248,12 +253,10 @@ def load_exams_from_csvs(nome: str, nasc_date) -> pd.DataFrame:
             df = pd.read_csv(pth, dtype=str, encoding="latin-1")
         df = _normalize_cols(df)
         cols_lower = {c.lower(): c for c in df.columns}
-        # map campos
         c_pac = cols_lower.get("paciente") or cols_lower.get("nome") or cols_lower.get("nomepaciente") or cols_lower.get("nm_paciente")
         c_nasc = cols_lower.get("datanascimento") or cols_lower.get("data_nascimento") or cols_lower.get("dt_nasc") or cols_lower.get("nascimento")
         if not (c_pac and c_nasc):
             continue
-        # normaliza
         df["_pac"]  = df[c_pac].astype(str).str.strip()
         df["_nasc"] = df[c_nasc].map(_parse_date_any)
         mask = (df["_pac"].str.casefold() == nome.strip().casefold()) & (df["_nasc"] == nasc_date)
@@ -292,7 +295,7 @@ def _no_show_row(row: dict) -> bool:
 
 def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
     df = df_all.copy()
-    df["_dt_ini"] = pd.to_datetime(df["datainicioconsulta"], errors="coerce")
+    df["_dt_ini"] = pd.to_datetime(df.get("datainicioconsulta"), errors="coerce")
     for c in ["idprontuario","posto","_dt_ini","especialidade","queixa","observacao","conduta"]:
         if c not in df.columns:
             df[c] = None
@@ -700,14 +703,11 @@ def main():
     exames_csv_path = None
     exams_compact_for_prompt: List[Dict[str, Any]] = []
     if not df_exams_all.empty:
-        # Exporta CSV apenas se origem foi DB; se foi CSV, mantemos arquivos originais
         if frames_ex:
             ts = datetime.now().strftime("%Y%m%d-%H%M%S")
             exames_csv_path = os.path.join(REPORTS_DIR, f"exames_{ts}.csv")
             df_exams_all.to_csv(exames_csv_path, index=False, encoding="utf-8-sig")
-        # JSON completo p/ saída
         exames_list = sanitize_for_json(df_exams_all).to_dict(orient="records")
-        # Versão compacta p/ prompt (limita e trunca)
         for r in exames_list[:100]:
             exams_compact_for_prompt.append(_compact_exam_row(r))
 
