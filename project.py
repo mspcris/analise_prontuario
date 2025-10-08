@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-project.py — Busca prontuários multi-postos e gera análise via Groq (apenas).
-- Lê PROMPT a partir de: ./prompts/prompt.txt
-- Lê modelos/parametrizações a partir de ./groq_modelos/*.ini
-  • Ordem de tentativa = prefixo numérico do arquivo (1-*, 2-*, 3-*, 4-*)
-  • Cada .ini pode definir: model, temperature, top_p, max_tokens, reasoning_effort, json_mode, stop
-- Envia o histórico em CHUNKS (map→reduce) para evitar 'context_length_exceeded'
-- Saída no terminal: APENAS JSON
+project.py — Busca prontuários multi-postos, coleta resultados de exames (DB + CSV fallback) e gera análise via Groq.
+- PROMPT: ./prompts/prompt.txt
+- MODELOS (.ini): ./groq_modelos/*.ini (ordem pelo prefixo numérico 1-*, 2-*, 3-*, 4-*)
+- Consultas por posto (A,N,X,...) + EXAMES via ./sql/select_resultado_exames.sql (igual para todos)
+- Se EXAMES do DB falhar/ficar vazio, lê CSVs em ./reports (exames*.csv) e filtra por paciente + nascimento
+- Envia histórico em CHUNKS (map→reduce) e inclui EXAMES (compactados) no prompt
+- Saída: APENAS JSON (inclui "EXAMES_RESULTADOS" e "exames_csv")
 
 Requisitos:
   pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv requests
 """
 
-import os, re, json, uuid, time, argparse, unicodedata
+import os, re, json, uuid, time, argparse, unicodedata, glob
 from datetime import datetime
 from urllib.parse import quote_plus
 from typing import List, Optional, Dict, Any, Tuple
@@ -34,6 +34,7 @@ PROMPTS_DIR     = os.path.join(BASE_DIR, "prompts")
 REPORTS_DIR     = os.path.join(BASE_DIR, "reports")
 PROMPT_FILE     = os.path.join(PROMPTS_DIR, "prompt.txt")
 GROQ_MODELS_DIR = os.path.join(BASE_DIR, "groq_modelos")
+EXAMS_SQL_FILE  = os.path.join(SQL_DIR, "select_resultado_exames.sql")
 
 POSTOS = ["A", "N", "X", "Y", "B", "R", "P", "C", "D", "G", "I", "J", "M"]
 
@@ -169,6 +170,99 @@ def query_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date, use_li
         print(f"[{label}] ERRO: {e}")
         return pd.DataFrame()
 
+# ---------- Exames ----------
+def _read_file_any_encoding(path: str) -> str:
+    encs = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
+    for enc in encs:
+        try:
+            with open(path, "r", encoding=enc) as f:
+                return f.read()
+        except Exception:
+            continue
+    with open(path, "rb") as f:
+        return f.read().decode("utf-8", errors="ignore")
+
+def load_exam_sql() -> str:
+    if not os.path.isfile(EXAMS_SQL_FILE):
+        # fallback seguro
+        return (
+            "select p.datanascimento, lsri.* "
+            "from vw_Cad_LancamentoServicoResultadoItem lsri "
+            "left join vw_cad_paciente p on p.matricula = lsri.matricula and lsri.paciente = p.nome "
+            "where (0=0) and (LEN(lsri.exameResultado) > 0) "
+            "and paciente = :paciente and p.DataNascimento = :nasc and lsri.desativado = 0 "
+            "order by lsri.grupo, lsri.servico, lsri.grupopagina, lsri.grupopaginaordem"
+        )
+    sql = _read_file_any_encoding(EXAMS_SQL_FILE).strip()
+    if "?" in sql and ":paciente" not in sql:
+        sql = sql.replace("?", ":paciente", 1).replace("?", ":nasc", 1)
+    sql = re.sub(r"\bmatriculal\b", "matricula", sql, flags=re.IGNORECASE)
+    return sql
+
+def query_exams_posto(label: str, odbc_conn_str: str, paciente: str, nasc_date) -> pd.DataFrame:
+    sql_txt = load_exam_sql()
+    try:
+        engine = make_engine(odbc_conn_str)
+        with engine.begin() as con:
+            df = pd.read_sql(text(sql_txt), con=con, params={"paciente": paciente.strip(), "nasc": nasc_date})
+        if not df.empty:
+            df.insert(0, "posto", label)
+        print(f"[{label}-EX] {('Nenhum resultado' if df.empty else str(len(df))+' resultado(s)')}")
+        return df
+    except Exception as e:
+        # mensagem curta (evita stack imenso)
+        msg = str(e)
+        if "916" in msg or "no contexto de segurança atual" in msg:
+            print(f"[{label}-EX] Sem permissão para ler exames (916). Ignorado.")
+        else:
+            print(f"[{label}-EX] ERRO: {msg.splitlines()[0]}")
+        return pd.DataFrame()
+
+def _normalize_cols(df: pd.DataFrame) -> pd.DataFrame:
+    df2 = df.copy()
+    df2.columns = [c.strip() for c in df2.columns]
+    return df2
+
+def _parse_date_any(x):
+    if pd.isna(x): return None
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y"):
+        try: return datetime.strptime(str(x)[:10], fmt).date()
+        except: pass
+    try:
+        return pd.to_datetime(x, errors="coerce").date()
+    except: return None
+
+def load_exams_from_csvs(nome: str, nasc_date) -> pd.DataFrame:
+    """
+    Lê qualquer arquivo ./reports/exames*.csv (inclusive 'exames.csv'),
+    filtra por paciente + nascimento (igualdade), retorna DF com coluna 'posto'='CSV'.
+    """
+    paths = sorted(glob.glob(os.path.join(REPORTS_DIR, "exames*.csv")))
+    if not paths:
+        return pd.DataFrame()
+    frames = []
+    for pth in paths:
+        try:
+            df = pd.read_csv(pth, dtype=str, encoding="utf-8-sig")
+        except UnicodeDecodeError:
+            df = pd.read_csv(pth, dtype=str, encoding="latin-1")
+        df = _normalize_cols(df)
+        cols_lower = {c.lower(): c for c in df.columns}
+        # map campos
+        c_pac = cols_lower.get("paciente") or cols_lower.get("nome") or cols_lower.get("nomepaciente") or cols_lower.get("nm_paciente")
+        c_nasc = cols_lower.get("datanascimento") or cols_lower.get("data_nascimento") or cols_lower.get("dt_nasc") or cols_lower.get("nascimento")
+        if not (c_pac and c_nasc):
+            continue
+        # normaliza
+        df["_pac"]  = df[c_pac].astype(str).str.strip()
+        df["_nasc"] = df[c_nasc].map(_parse_date_any)
+        mask = (df["_pac"].str.casefold() == nome.strip().casefold()) & (df["_nasc"] == nasc_date)
+        df_sel = df.loc[mask].copy()
+        if not df_sel.empty:
+            df_sel.insert(0, "posto", "CSV")
+            frames.append(df_sel.drop(columns=["_pac","_nasc"], errors="ignore"))
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
 # ---------------- JSON helpers ----------------
 def sanitize_for_json(df: pd.DataFrame) -> pd.DataFrame:
     df2 = df.copy()
@@ -218,18 +312,6 @@ def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # ---------------- Prompt ----------------
-def _read_file_any_encoding(path: str) -> str:
-    encs = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
-    for enc in encs:
-        try:
-            with open(path, "r", encoding=enc) as f:
-                return f.read()
-        except Exception:
-            continue
-    # última tentativa binária
-    with open(path, "rb") as f:
-        return f.read().decode("utf-8", errors="ignore")
-
 def load_user_prompt() -> str:
     if not os.path.isfile(PROMPT_FILE):
         return (
@@ -239,13 +321,35 @@ def load_user_prompt() -> str:
         )
     return _read_file_any_encoding(PROMPT_FILE).strip()
 
+def _compact_exam_row(r: Dict[str, Any]) -> Dict[str, Any]:
+    keys = {k.lower(): k for k in r.keys()}
+    def g(*opts):
+        for o in opts:
+            if o.lower() in keys:
+                return r[keys[o.lower()]]
+        return None
+    def trunc(s, n=200):
+        s = clean_text(s)
+        return (s[:n] + "…") if s and len(s) > n else s
+    return {
+        "posto": r.get("posto"),
+        "data": g("dataresultado", "data", "datacoleta", "datalancamento"),
+        "grupo": g("grupo"),
+        "servico": g("servico"),
+        "exame": g("exame", "exameitem", "examedescricao"),
+        "resultado": trunc(g("exameresultado", "resultado")),
+        "referencia": trunc(g("referencia", "valorreferencia", "intervaloreferencia")),
+        "unidade": g("unidade", "unidademedida"),
+        "observacao": trunc(g("observacao", "observacoes")),
+    }
+
 def build_prompt_chunk(queixa_atual: str,
                        ultimos_atend: List[Dict[str, Any]],
                        historicos_chunk: List[Dict[str, Any]],
                        user_prompt: str,
                        part_idx: int,
-                       part_total: int) -> str:
-    # bloco1 compacto para referência (com especialidade)
+                       part_total: int,
+                       exams_compact: List[Dict[str, Any]]) -> str:
     linhas_vis = ["idprontuario | posto | data | especialidade | resumo"]
     for r in ultimos_atend:
         linhas_vis.append(
@@ -253,9 +357,11 @@ def build_prompt_chunk(queixa_atual: str,
         )
     bloco1_txt = "\n".join(linhas_vis)
     hist_json = json.dumps(historicos_chunk, ensure_ascii=False)
+    exams_json = json.dumps(exams_compact, ensure_ascii=False)
     header = (
         f"QUEIXA_ATUAL:\n{queixa_atual}\n\n"
         f"ULTIMOS_ATENDIMENTOS (NÃO ALTERAR):\n{bloco1_txt}\n\n"
+        f"EXAMES_JSON (compacto, considerar em bloco2/3/4):\n{exams_json}\n\n"
         f"HISTORICO_JSON (PARTE {part_idx}/{part_total}):\n{hist_json}\n\n"
     )
     return header + (user_prompt or "")
@@ -316,7 +422,6 @@ def _list_groq_model_configs() -> List[Dict[str, Any]]:
         except Exception:
             pass
         if cfg["model"]:
-            # manter apenas o primeiro arquivo de cada ordem
             items.setdefault(order, cfg)
     return [items[k] for k in sorted(items.keys())]
 
@@ -407,10 +512,8 @@ def call_groq_map_reduce(queixa_atual: str,
                          ultimos_atend: List[Dict[str, Any]],
                          historicos: List[Dict[str, Any]],
                          model_cfgs: List[Dict[str, Any]],
-                         user_prompt: str) -> Tuple[Optional[str], Dict[str, Any]]:
-    """
-    Retorna (modelo_utilizado, resultado_json_dict) ou (None, vazio) em falha.
-    """
+                         user_prompt: str,
+                         exams_compact: List[Dict[str, Any]]) -> Tuple[Optional[str], Dict[str, Any]]:
     if not model_cfgs:
         return (None, {})
 
@@ -426,7 +529,7 @@ def call_groq_map_reduce(queixa_atual: str,
 
         ok_all = True
         for idx, chunk in enumerate(parts, start=1):
-            prompt = build_prompt_chunk(queixa_atual, ultimos_atend, chunk, user_prompt, idx, total_parts)
+            prompt = build_prompt_chunk(queixa_atual, ultimos_atend, chunk, user_prompt, idx, total_parts, exams_compact)
             out = groq_chat_json(prompt, cfg)
             if not out:
                 ok_all = False
@@ -471,11 +574,11 @@ def call_groq_map_reduce(queixa_atual: str,
 
 # ---------------- CLI ----------------
 def parse_args():
-    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + análise Groq (JSON).")
+    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + exames + análise Groq (JSON).")
     p.add_argument("-n", "--nome", help="Nome completo do paciente")
     p.add_argument("-d", "--nascimento", help="Data de nascimento dd/mm/yyyy")
     p.add_argument("-q", "--queixa", help="Queixa atual")
-    p.add_argument("--like", action="store_true", help="Se não achar por igualdade, tenta LIKE automaticamente")
+    p.add_argument("--like", action="store_true", help="Se não achar por igualdade, tenta LIKE automaticamente (consultas)")
     return p.parse_args()
 
 def main():
@@ -499,6 +602,7 @@ def main():
         print(json.dumps({"ok": False, "erro": "Nenhum posto configurado no .env."}, ensure_ascii=False))
         return
 
+    # -------- Consultas (por posto) --------
     frames = []
     for lbl, conn_str in conns.items():
         df = query_posto(lbl, conn_str, nome, nasc_date, use_like=False)
@@ -517,7 +621,22 @@ def main():
                 frames_like.append(df)
         df_all = pd.concat(frames_like, ignore_index=True) if frames_like else pd.DataFrame()
 
-    if df_all.empty:
+    # -------- Exames (SQL único, igualdade exata) --------
+    frames_ex = []
+    for lbl, conn_str in conns.items():
+        df_ex = query_exams_posto(lbl, conn_str, nome, nasc_date)  # igualdade exata
+        if not df_ex.empty:
+            frames_ex.append(df_ex)
+    df_exams_all = pd.concat(frames_ex, ignore_index=True) if frames_ex else pd.DataFrame()
+
+    # Fallback CSV se DB não devolver nada
+    if df_exams_all.empty:
+        df_csv = load_exams_from_csvs(nome, nasc_date)
+        if not df_csv.empty:
+            print(f"[EX-CSV] {len(df_csv)} linha(s) carregadas de CSV.")
+            df_exams_all = df_csv
+
+    if df_all.empty and df_exams_all.empty:
         print(json.dumps({
             "ok": True,
             "paciente": nome,
@@ -530,20 +649,23 @@ def main():
             "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": ["sem registros"],
             "DIAGNOSTICO DIFERENCIAL": ["sem registros"],
             "SUGESTAO CAMPOS OBS E CONDUTA": {"observacao": "", "conduta": ""},
+            "EXAMES_RESULTADOS": [],
+            "exames_csv": None,
             "rodape": ["NENHUM"]
         }, ensure_ascii=False, indent=2))
         return
 
-    # Normalização mínima
-    df_all.columns = [str(c).strip().lower() for c in df_all.columns]
-    for col in ["queixa","observacao","conduta","especialidade","profissional_atendente","datainicioconsulta"]:
-        if col not in df_all.columns:
-            df_all[col] = None
-    for col in ["queixa","observacao","conduta","especialidade","profissional_atendente"]:
-        df_all[col] = df_all[col].map(clean_text)
+    # Normalização mínima das consultas
+    if not df_all.empty:
+        df_all.columns = [str(c).strip().lower() for c in df_all.columns]
+        for col in ["queixa","observacao","conduta","especialidade","profissional_atendente","datainicioconsulta"]:
+            if col not in df_all.columns:
+                df_all[col] = None
+        for col in ["queixa","observacao","conduta","especialidade","profissional_atendente"]:
+            df_all[col] = df_all[col].map(clean_text)
 
     # ----- ULTIMOS ATENDIMENTOS -----
-    df_b1 = build_last10(df_all)
+    df_b1 = build_last10(df_all) if not df_all.empty else pd.DataFrame(columns=["idprontuario","posto","data","especialidade","resumo"])
     ultimos_atendimentos: List[Dict[str,Any]] = []
     for _, r in df_b1.iterrows():
         ultimos_atendimentos.append({
@@ -554,33 +676,53 @@ def main():
             "resumo": r.get("resumo",""),
         })
 
-    # ------ HISTÓRICO p/ IA ------
-    df_hist = df_all.copy()
-    mask_send = []
-    for _, row in df_hist.iterrows():
-        mask_send.append(not _no_show_row(row.to_dict()))
-    df_hist_send = df_hist.loc[mask_send].copy()
+    # ------ HISTÓRICO p/ IA (consultas) ------
+    historicos = []
+    if not df_all.empty:
+        df_hist = df_all.copy()
+        mask_send = []
+        for _, row in df_hist.iterrows():
+            mask_send.append(not _no_show_row(row.to_dict()))
+        df_hist_send = df_hist.loc[mask_send].copy()
 
-    def _is_blank_series(s: pd.Series) -> pd.Series:
-        if s is None:
-            return pd.Series([True] * 0)
-        return s.isna() | s.astype(str).str.strip().eq("") | s.astype(str).str.lower().eq("none")
-    q_blank = _is_blank_series(df_hist_send.get("queixa", pd.Series([None] * len(df_hist_send))))
-    c_blank = _is_blank_series(df_hist_send.get("conduta", pd.Series([None] * len(df_hist_send))))
-    df_hist_send = df_hist_send.loc[~(q_blank & c_blank)].reset_index(drop=True)
+        def _is_blank_series(s: pd.Series) -> pd.Series:
+            if s is None:
+                return pd.Series([True] * 0)
+            return s.isna() | s.astype(str).str.strip().eq("") | s.astype(str).str.lower().eq("none")
+        q_blank = _is_blank_series(df_hist_send.get("queixa", pd.Series([None] * len(df_hist_send))))
+        c_blank = _is_blank_series(df_hist_send.get("conduta", pd.Series([None] * len(df_hist_send))))
+        df_hist_send = df_hist_send.loc[~(q_blank & c_blank)].reset_index(drop=True)
 
-    historicos = sanitize_for_json(df_hist_send).to_dict(orient="records")
+        historicos = sanitize_for_json(df_hist_send).to_dict(orient="records")
 
-    # salvar JSON “completo” (auditoria) — limpo em <=1h
+    # ------ EXAMES: compacta p/ prompt, exporta CSV (se veio do DB), entrega JSON ------
+    exames_list = []
+    exames_csv_path = None
+    exams_compact_for_prompt: List[Dict[str, Any]] = []
+    if not df_exams_all.empty:
+        # Exporta CSV apenas se origem foi DB; se foi CSV, mantemos arquivos originais
+        if frames_ex:
+            ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+            exames_csv_path = os.path.join(REPORTS_DIR, f"exames_{ts}.csv")
+            df_exams_all.to_csv(exames_csv_path, index=False, encoding="utf-8-sig")
+        # JSON completo p/ saída
+        exames_list = sanitize_for_json(df_exams_all).to_dict(orient="records")
+        # Versão compacta p/ prompt (limita e trunca)
+        for r in exames_list[:100]:
+            exams_compact_for_prompt.append(_compact_exam_row(r))
+
+    # salvar JSON bruto (auditoria)
     payload_full = {
         "metadata": {
             "paciente_input": nome,
             "data_nascimento_input": nasc_date.isoformat(),
             "queixa_input": queixa,
             "gerado_em": datetime.now().isoformat(),
-            "registros_total": int(len(df_all))
+            "registros_total_consultas": int(len(df_all)) if not isinstance(df_all, list) else 0,
+            "registros_total_exames": int(len(df_exams_all)) if not isinstance(df_exams_all, list) else 0,
         },
-        "amostra": sanitize_for_json(df_all).to_dict(orient="records")
+        "consultas_amostra": sanitize_for_json(df_all).to_dict(orient="records") if not df_all.empty else [],
+        "exames_amostra": exames_list,
     }
     json_path = save_json(payload_full)
     print(f"JSON: {os.path.basename(json_path)} (será limpo em ~1h)")
@@ -588,7 +730,9 @@ def main():
     # ---------------- IA (Groq) ----------------
     prompt_txt = load_user_prompt()
     model_cfgs = _list_groq_model_configs()
-    model_used, result = call_groq_map_reduce(queixa, ultimos_atendimentos, historicos, model_cfgs, prompt_txt)
+    model_used, result = call_groq_map_reduce(
+        queixa, ultimos_atendimentos, historicos, model_cfgs, prompt_txt, exams_compact_for_prompt
+    )
 
     if not result:
         result = {
@@ -605,13 +749,15 @@ def main():
         "paciente": nome,
         "data_nascimento": nasc_date.isoformat(),
         "queixa_atual": queixa,
-        "registros_total": int(len(df_all)),
+        "registros_total": int(len(df_all)) if not df_all.empty else 0,
         "provider_mode": "json" if model_used else "fail",
         "provider_used": model_used,
         "ULTIMOS ATENDIMENTOS": ultimos_atendimentos,
         "ATENDIMENTOS ANTERIORES RELACIONADOS A QUEIXA ATUAL": result.get("bloco2", []),
         "DIAGNOSTICO DIFERENCIAL": result.get("bloco3", []),
         "SUGESTAO CAMPOS OBS E CONDUTA": result.get("bloco4", {"observacao":"", "conduta":""}),
+        "EXAMES_RESULTADOS": exames_list,
+        "exames_csv": exames_csv_path,
         "rodape": result.get("rodape", ["NENHUM"])
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
