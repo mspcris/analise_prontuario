@@ -1,0 +1,17 @@
+from groq import Groq
+
+client = Groq()
+
+completion = client.chat.completions.create(
+    model="openai/gpt-oss-120b",
+    messages=[
+        {"role": "user", "content": "Me devolva um JSON com foo e bar."}
+    ],
+    temperature=0.49,
+    max_tokens=800,
+    top_p=1,
+    stream=False,
+    response_format={"type": "json_object"}
+)
+
+print(completion.choices[0].message.content)
