@@ -4,7 +4,7 @@ REGRAS DE AUDITORIA (OBRIGATÓRIAS)
 1) PROIBIDO inventar. Só cite EXAMES, DIAGNÓSTICOS ou MEDICAÇÕES que estejam no JSON enviado.
 2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses no formato:
    (Posto {posto}, id {idprontuario}, data {datainicioconsulta})
-3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO NO HISTÓRICO”.
+3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO PERÍODO OBSERVADO”.
 
 SAÍDA OBRIGATÓRIA (FORMATO JSON E SOMENTE JSON):
 Responda **apenas** este objeto JSON, sem texto adicional:
