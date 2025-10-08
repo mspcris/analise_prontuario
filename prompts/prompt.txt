@@ -20,7 +20,7 @@ REGRAS ESPECÍFICAS:
 - NÃO repita nem altere o Bloco 1 (ele já foi fornecido pelo sistema).
 - "bloco2": verificar todos os registros e listar os que possuem relacionamento direto (>=70% de similaridade) com a queixa atual. Uma linha por atendimento, com a fonte.
 - "bloco3": diagnóstico diferencial para a queixa atual. Pode usar conhecimento médico geral, mas se citar algo dos registros, inclua fonte.
-- "bloco4": sugestão de preenchimento de OBSERVAÇÃO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuário; evite medicações sem contexto).
+- "bloco4": sugestão de preenchimento de OBSERVAÇÃO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuário; evite medicações sem contexto). Neste campo deve-se preencher o hpp, hda, exame fisico e hipoteses diagnosticas.
 - "rodape": “NENHUM ITEM SEM EVIDÊNCIA” se não houver itens sem evidência; caso contrário, liste “NÃO ENCONTRADO”.
 
 Validação final:
