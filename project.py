@@ -1,24 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 project.py — CLI para buscar prontuários em múltiplos bancos (por “posto”),
-gerar JSON SOMENTE com históricos e enviar a análise para LLM em formato JSON,
-usando somente Groq (REST OpenAI-compatible). Sem OpenAI.
+gerar JSON SOMENTE com históricos e enviar a análise para LLM via Groq, em
+modo map–reduce (chunking), com fail-over pela ordem numérica dos arquivos
+em ./groq_modelos (1-*.txt, 2-*.txt, ...).
 
-ATUALIZAÇÕES
-- Saída no terminal APENAS JSON.
-- Bloco 1: sempre os 10 últimos atendimentos (local).
-- NUNCA presumir conteúdo nos blocos 2/3/4: só entram se vier da IA; se falhar, mensagem padrão.
-- Filtra de ENVIAR À IA entradas com “não compareceu ... chamada”.
-- Limpa ./json e ./reports com >1h.
-- **Groq:** tenta modelos em ordem numérica a partir dos arquivos de ./groq_modelos:
-    1-*.txt, 2-*.txt, 3-*.txt, ...
-  Se o 1 responder, não tenta os demais; se der erro (ex.: 404 model_not_found),
-  avança para o próximo arquivo.
-- Cada arquivo pode conter:
-    * INI com seção [groq] e chave model
-    * Código do playground (model="openai/gpt-oss-120b")
-    * Uma linha simples com o nome do modelo
-- Força response_format={"type": "json_object"} para a IA devolver JSON válido.
+O prompt principal é lido de ./prompts/prompt.txt.
 
 Requisitos:
   pip install "sqlalchemy>=2,<3" pyodbc pandas numpy python-dotenv requests
@@ -35,14 +22,21 @@ Requisitos:
 
   GROQ_API_KEY=...
 
-Opcional:
-  PROMPT_PATH=prompts/prompt_analise_atds_anteriores.txt
+Estrutura esperada:
+  /sql/{A..M}.sql            # opcional; se faltar, usa SELECT padrão
+  /groq_modelos/1-*.txt      # modelo 1 (prioridade)
+  /groq_modelos/2-*.txt      # modelo 2 (fallback), etc.
+    - cada .txt pode ter:
+        a) INI: [groq]\nmodel="nome-do-modelo"
+        b) ou primeira linha útil com o nome do modelo
+
+Saída do programa: APENAS JSON.
 """
 
 import os, re, json, uuid, time, argparse, unicodedata
 from datetime import datetime
 from urllib.parse import quote_plus
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any
 
 import numpy as np
 import pandas as pd
@@ -59,7 +53,7 @@ SQL_DIR      = os.path.join(BASE_DIR, "sql")
 JSON_DIR     = os.path.join(BASE_DIR, "json")
 PROMPTS_DIR  = os.path.join(BASE_DIR, "prompts")
 REPORTS_DIR  = os.path.join(BASE_DIR, "reports")
-DEFAULT_PROMPT_PATH = os.path.join(PROMPTS_DIR, "prompt_analise_atds_anteriores.txt")
+PROMPT_TXT   = os.path.join(PROMPTS_DIR, "prompt.txt")
 
 POSTOS = ["A", "N", "X", "Y", "B", "R", "P", "C", "D", "G", "I", "J", "M"]
 
@@ -115,6 +109,19 @@ def clean_text(s: Optional[str]) -> str:
 def strip_accents(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
 
+def load_prompt_text() -> str:
+    try:
+        with open(PROMPT_TXT, "r", encoding="utf-8") as f:
+            txt = f.read().strip()
+        return txt
+    except Exception:
+        # fallback curto e seguro
+        return (
+            'Responda APENAS JSON válido com as chaves: '
+            '{"bloco2":[...],"bloco3":[...],"bloco4":{"observacao":"","conduta":""},"rodape":[...]} '
+            'Não invente. Cite fontes (Posto X, id Y, data Z) quando usar histórico.'
+        )
+
 # ---------------- Conexão ----------------
 def build_conn_str(host, base, user, pwd, port, encrypt, trust_cert, timeout) -> str:
     server = f"tcp:{host},{port or '1433'}"
@@ -163,7 +170,7 @@ def load_sql_for_posto(posto: str) -> str:
         "p.idmedico, p.observacao, p.informacao, p.temperatura, p.bpm, "
         "p.idespecialidade, p.especialidade, p.nomesocial, p.pacienteatendido, "
         "m.Nome AS profissional_atendente "
-        "FROM cad_prontuario p LEFT JOIN cad_medico m ON m.idmedico = p.idmedico"
+        "FROM cad_prontuario p LEFT JOIN cad_medico m ON m.idMedico = p.idmedico"
     )
 
 def wrap_with_filters(base_sql: str, use_like: bool) -> text:
@@ -245,105 +252,70 @@ def build_last10(df_all: pd.DataFrame) -> pd.DataFrame:
     df["resumo"] = df.apply(_mk_resumo, axis=1)
     return df
 
-# ---------------- Prompt ----------------
-STRICT_PROMPT = """# STRICT_EVIDENCE_PROMPT_v2 (pt-BR)
+# ---------------- Chunking (map–reduce) ----------------
+def _rough_tokens(s: str) -> int:
+    # Estimativa simples (~4 chars por token)
+    return max(1, len(s) // 4)
 
-REGRAS DE AUDITORIA (OBRIGATÓRIAS)
-1) PROIBIDO inventar. Só cite EXAMES, DIAGNÓSTICOS ou MEDICAÇÕES que estejam no JSON enviado.
-2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses no formato:
-   (Posto {posto}, id {idprontuario}, data {datainicioconsulta})
-3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO NO HISTÓRICO”.
+def _records_to_json(records):
+    return json.dumps(records, ensure_ascii=False)
 
-SAÍDA OBRIGATÓRIA (FORMATO JSON E SOMENTE JSON):
-Responda **apenas** este objeto JSON, sem texto adicional:
-
+# prompt parcial (MAP) curto para extrair sinalizações + similares
+PARTIAL_PROMPT = """Responda SOMENTE JSON no formato:
 {
-  "bloco2": [ "linhas... (uma por atendimento similar à queixa atual, com fonte)" ],
-  "bloco3": [ "diagnóstico diferencial, linhas separadas, com fontes se houver" ],
-  "bloco4": { "observacao": "texto", "conduta": "texto" },
-  "rodape": [ "Itens sem evidência textual explícita: ... ou NENHUM" ]
+ "bloco2": ["..."],    // linhas com (Posto X, id Y, data Z) quando houver
+ "sinais": ["..."],    // termos/achados relevantes extraídos do lote
+ "red_flags": ["..."]  // red flags do lote
 }
-
-REGRAS ESPECÍFICAS:
-- NÃO repita nem altere o Bloco 1 (ele já foi fornecido pelo sistema).
-- "bloco2": verificar todos os registros e listar os que possuem relacionamento direto (>=70% de similaridade) com a queixa atual. Uma linha por atendimento, com a fonte.
-- "bloco3": diagnóstico diferencial para a queixa atual. Pode usar conhecimento médico geral, mas se citar algo dos registros, inclua fonte.
-- "bloco4": sugestão de preenchimento de OBSERVAÇÃO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuário; evite medicações sem contexto).
-- "rodape": “NENHUM” se não houver itens sem evidência; caso contrário, liste “NÃO ENCONTRADO”.
-
-Validação final:
-- Se citar algo do histórico e não houver fonte entre parênteses, remova a citação.
-- A resposta deve ser JSON válido (RFC), sem comentários e sem campos extras.
+Sem repetir Bloco 1. Sem inventar. Use as fontes (Posto/id/data) dos itens DESTE lote quando aplicável.
 """
 
-# ---------------- Modelos Groq (ordem numérica por arquivo) ----------------
-def _extract_model_any(text: str) -> Optional[str]:
-    """Extrai nome de modelo de INI, JSON/código ou linha simples."""
-    # 1) INI
-    try:
-        parser = ConfigParser(inline_comment_prefixes=("#", ";"))
-        parser.read_string(text)
-        if parser.has_section("groq") and parser.has_option("groq", "model"):
-            m = parser.get("groq", "model").strip().strip('"').strip("'")
-            if m:
-                return m
-    except Exception:
-        pass
-    # 2) regex típicas
-    patterns = [
-        r'(?m)^\s*model\s*=\s*["\']([^"\']+)["\']',      # model="openai/gpt-oss-120b"
-        r'["\']model["\']\s*:\s*["\']([^"\']+)["\']',    # "model": "openai/gpt-oss-120b"
-        r'(openai/[A-Za-z0-9._\-]+)',                    # fallback: openai/...
-        r'(llama-[A-Za-z0-9._\-]+)',                     # ex: llama-3.3-70b-versatile
-        r'(gemma[^\s"\'/]+)',
-        r'(mixtral[^\s"\'/]+)',
+def _map_prompt(queixa_atual: str, lote_json: str) -> str:
+    return f"QUEIXA_ATUAL:\n{queixa_atual}\n\nHISTORICO_JSON:\n{lote_json}\n\n{PARTIAL_PROMPT}"
+
+def _reduce_prompt(queixa_atual: str, bloco1_linhas: list, parciais: list[dict]) -> str:
+    linhas_vis = ['idprontuario | posto | data | resumo'] + [
+        f'{r["idprontuario"]} | {r["posto"]} | {r["data"]} | {r["resumo"]}' for r in bloco1_linhas
     ]
-    for pat in patterns:
-        m = re.search(pat, text)
-        if m:
-            val = m.group(1).strip()
-            if not val.lower().startswith(("from ", "client", "import ")):
-                return val
-    # 3) Primeira linha útil contendo "/"
-    for raw in text.splitlines():
-        ln = raw.strip()
-        if not ln or ln.startswith(("#",";","//","[")):
-            continue
-        ln = re.split(r"\s[#;].*$", ln)[0].strip().strip('"').strip("'")
-        if "/" in ln or ln.startswith(("llama-", "gemma", "mixtral")):
-            return ln
-    return None
+    b1 = "\n".join(linhas_vis)
+    agregado = {
+        "bloco2_all": sum((p.get("bloco2",[]) for p in parciais), []),
+        "sinais_all": sum((p.get("sinais",[]) for p in parciais), []),
+        "red_flags_all": sum((p.get("red_flags",[]) for p in parciais), []),
+    }
+    strict = load_prompt_text()  # conteúdo de prompts/prompt.txt
+    return (
+        f"QUEIXA_ATUAL:\n{queixa_atual}\n\n"
+        f"BLOCO_1_TABELA_FIXA (NÃO ALTERAR):\n{b1}\n\n"
+        f"PARCIAIS_JSON:\n{json.dumps(agregado, ensure_ascii=False)}\n\n"
+        f"{strict}"
+    )
 
-def _load_groq_models_ordered() -> List[str]:
+def _chunk_records_for_model(records: List[dict], model_name: str, tgt_tokens_per_chunk: int) -> List[List[dict]]:
     """
-    Lê todos os arquivos de ./groq_modelos com padrão N-*.txt,
-    ordena por N crescente e extrai o nome do modelo de cada um.
+    Divide o histórico em lotes que caibam no contexto alvo do modelo.
+    Trunca campos textuais gigantes (proteção).
     """
-    folder = os.path.join(BASE_DIR, "groq_modelos")
-    if not os.path.isdir(folder):
-        return []
-    items: List[Tuple[int, str]] = []
-    for fn in os.listdir(folder):
-        m = re.match(r"^(\d+)-.+\.txt$", fn, flags=re.IGNORECASE)
-        if not m:
-            continue
-        order = int(m.group(1))
-        items.append((order, os.path.join(folder, fn)))
-    items.sort(key=lambda x: x[0])
+    chunks, cur = [], []
+    for r in sorted(records, key=lambda x: x.get("datainicioconsulta") or "", reverse=True):
+        # truncagens defensivas
+        r = dict(r)
+        for k in ("queixa", "observacao", "conduta"):
+            v = r.get(k) or ""
+            if isinstance(v, str) and len(v) > 1200:
+                r[k] = v[:1200] + "..."
+        probe = _records_to_json(cur + [r])
+        if _rough_tokens(probe) <= max(100, tgt_tokens_per_chunk):
+            cur.append(r)
+        else:
+            if cur:
+                chunks.append(cur)
+            cur = [r]
+    if cur:
+        chunks.append(cur)
+    return chunks
 
-    models: List[str] = []
-    for _, path in items:
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                txt = f.read()
-            model = _extract_model_any(txt)
-            if model:
-                models.append(model)
-        except Exception:
-            continue
-    return models
-
-# ---------------- IA calls (Groq REST) ----------------
+# ---------------- Groq REST ----------------
 def _request_with_retries(func, label: str, attempts: int = 3, backoff: float = 1.5) -> Optional[str]:
     import random
     for i in range(attempts):
@@ -378,87 +350,138 @@ def _request_with_retries(func, label: str, attempts: int = 3, backoff: float = 
             time.sleep(delay)
     return None
 
-def _groq_chat_with_model(model: str, user_payload: Dict[str, Any]) -> Optional[str]:
-    api_key = _env("GROQ_API_KEY", "")
+def _groq_chat_with_model(model: str, prompt: str, max_tokens: int = 900) -> Optional[str]:
+    api_key = _env("GROQ_API_KEY","")
     if not api_key:
         print("[GROQ] falta GROQ_API_KEY.")
         return None
-
-    print(f"[GROQ] tentando modelo: {model}")
     url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type":"application/json"}
     body = {
         "model": model,
         "messages": [
-            {"role": "system", "content": "Você é um assistente clínico objetivo. Responda em pt-BR."},
-            {"role": "user", "content": user_payload["prompt"]},
+            {"role":"system","content":"Você é um assistente clínico objetivo. Responda em pt-BR."},
+            {"role":"user","content": prompt},
         ],
         "temperature": 0.2,
         "top_p": 1,
-        "max_tokens": int(user_payload.get("max_tokens", 1800)),
-        "response_format": {"type": "json_object"},
-        "stream": False,
+        "max_tokens": int(max_tokens),
+        "response_format": {"type":"json_object"},
+        "stream": False
     }
-
     def _do():
-        resp = requests.post(url, headers=headers, json=body, timeout=60)
-        if resp.status_code != 200:
-            try:
-                print(f"[GROQ] HTTP {resp.status_code}: {resp.json()}")
-            except Exception:
-                print(f"[GROQ] HTTP {resp.status_code}: {resp.text[:800]}")
-            resp.raise_for_status()
-        data = resp.json()
+        r = requests.post(url, headers=headers, json=body, timeout=90)
+        if r.status_code != 200:
+            try: print(f"[GROQ-{model}] HTTP {r.status_code}: {r.json()}")
+            except: print(f"[GROQ-{model}] HTTP {r.status_code}: {r.text[:800]}")
+            r.raise_for_status()
+        data = r.json()
         choices = (data or {}).get("choices") or []
         if not choices or not choices[0].get("message", {}).get("content"):
-            print(f"[GROQ] resposta inesperada: {str(data)[:800]}")
             raise RuntimeError("groq_empty_or_malformed")
         return choices[0]["message"]["content"].strip()
+    return _request_with_retries(_do, f"GROQ-{model}", attempts=3, backoff=1.5)
 
-    return _request_with_retries(_do, label=f"GROQ-{model}", attempts=3, backoff=1.5)
+# ---------------- Modelos (ordem 1-,2-,3-...) ----------------
+def _load_groq_models_ordered() -> List[str]:
+    folder = os.path.join(BASE_DIR, "groq_modelos")
+    if not os.path.isdir(folder):
+        return []
+    files = [f for f in os.listdir(folder) if re.match(r"^\d+-.*\.txt$", f)]
+    files.sort(key=lambda x: int(x.split("-")[0]))
+    models = []
+    for f in files:
+        p = os.path.join(folder, f)
+        try:
+            txt = open(p,"r",encoding="utf-8").read()
+            # tenta INI
+            m = None
+            try:
+                cp = ConfigParser(inline_comment_prefixes=("#",";"))
+                cp.read_string(txt)
+                if cp.has_section("groq") and cp.has_option("groq","model"):
+                    m = cp.get("groq","model").strip().strip('"').strip("'")
+            except Exception:
+                pass
+            if not m:
+                for ln in txt.splitlines():
+                    ln = ln.strip()
+                    if ln and not ln.startswith(("#",";","//","[")):
+                        m = re.split(r"\s[#;].*$", ln)[0].strip().strip('"').strip("'")
+                        break
+            if m:
+                models.append(m)
+        except Exception:
+            continue
+    return models
 
-def groq_chat_json(user_payload: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
-    """
-    Tenta os modelos em ordem numérica (1-*.txt, 2-*.txt, ...).
-    Retorna (modelo_usado, conteúdo_json_ou_None).
-    """
-    # 1) prioridade para GROQ_MODEL no .env (se definido, usa só ele)
-    env_model = _env("GROQ_MODEL", "")
-    if env_model:
-        out = _groq_chat_with_model(env_model, user_payload)
-        return (env_model if out else None, out)
+# Limites conservadores por modelo (tokens de contexto)
+CONTEXT_LIMITS = {
+    "openai/gpt-oss-120b": 8000,          # modelo OSS 120b (8k aprox)
+    "llama-3.3-70b-versatile": 128000,    # 128k
+    "deepseek-r1-distill-llama-70b": 128000,
+    "gemma2-9b-it": 8000,
+}
+RESERVED_COMPLETION_TOKENS = 900  # reserva para a resposta
 
-    # 2) ordem numérica da pasta groq_modelos
-    models = _load_groq_models_ordered()
-    if not models:
-        # 3) fallback sem arquivos
-        models = ["llama-3.3-70b-versatile"]
+# ---------------- IA Orquestração (map–reduce + fail-over) ----------------
+def run_map_reduce_groq(queixa: str, bloco1_list: List[Dict[str,Any]], hist_json_records: List[Dict[str,Any]]) -> tuple[Optional[str], Optional[str]]:
+    models_ordered = _load_groq_models_ordered() or ["llama-3.3-70b-versatile"]
+    ia_json_str, provider_used = None, None
 
-    for m in models:
-        out = _groq_chat_with_model(m, user_payload)
-        if out:
-            return (m, out)
-        # se falhar, continua para o próximo arquivo/modelo
-    return (None, None)
+    for model in models_ordered:
+        print(f"[GROQ] tentando modelo: {model}")
+        max_ctx = CONTEXT_LIMITS.get(model, 32000)
+        tgt_tokens_per_chunk = max(1000, max_ctx - RESERVED_COMPLETION_TOKENS - 1200)  # margem p/ instruções
 
-# ---------------- IA prompt builder ----------------
+        # --- MAP: dividir em lotes
+        lotes = _chunk_records_for_model(hist_json_records, model, tgt_tokens_per_chunk)
+        parciais = []
+        ok_map = True
+
+        for i, lote in enumerate(lotes, 1):
+            p_map = _map_prompt(queixa, _records_to_json(lote))
+            out = _groq_chat_with_model(model, p_map, max_tokens=min(800, RESERVED_COMPLETION_TOKENS))
+            if not out:
+                ok_map = False
+                break
+            try:
+                parciais.append(json.loads(out))
+            except Exception:
+                ok_map = False
+                break
+
+        if not ok_map or not parciais:
+            continue  # tenta próximo modelo
+
+        # --- REDUCE: consolidar no formato final exigido em prompt.txt
+        p_reduce = _reduce_prompt(queixa, bloco1_list, parciais)
+        out_final = _groq_chat_with_model(model, p_reduce, max_tokens=min(1000, RESERVED_COMPLETION_TOKENS))
+        if out_final:
+            ia_json_str, provider_used = out_final, "groq"
+            break
+
+    return ia_json_str, provider_used
+
+# ---------------- IA prompt builder (para redução final usa prompt.txt) ----------------
 def build_prompt_json(queixa_atual: str, bloco1_linhas: List[Dict[str, Any]], historicos_filtrados: List[Dict[str, Any]]) -> str:
+    # (mantido por compatibilidade, não usamos diretamente no map–reduce)
     linhas_vis = ["idprontuario | posto | data | resumo"]
     for r in bloco1_linhas:
         linhas_vis.append(f'{r["idprontuario"]} | {r["posto"]} | {r["data"]} | {r["resumo"]}')
     bloco1_txt = "\n".join(linhas_vis)
     hist_json = json.dumps(historicos_filtrados, ensure_ascii=False)
-    prompt = (
+    prompt_main = load_prompt_text()
+    return (
         f"QUEIXA_ATUAL:\n{queixa_atual}\n\n"
         f"BLOCO_1_TABELA_FIXA (NÃO ALTERAR):\n{bloco1_txt}\n\n"
         f"HISTORICO_JSON:\n{hist_json}\n\n"
-        f"{STRICT_PROMPT}"
+        f"{prompt_main}"
     )
-    return prompt
 
 # ---------------- CLI ----------------
 def parse_args():
-    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + análise Groq (JSON).")
+    p = argparse.ArgumentParser(description="Busca de prontuários multi-postos + análise Groq (JSON, chunking).")
     p.add_argument("-n", "--nome", help="Nome completo do paciente")
     p.add_argument("-d", "--nascimento", help="Data de nascimento dd/mm/yyyy")
     p.add_argument("-q", "--queixa", help="Queixa atual")
@@ -529,7 +552,7 @@ def main():
     for col in ["queixa","observacao","conduta","especialidade","profissional_atendente"]:
         df_all[col] = df_all[col].map(clean_text)
 
-    # ----- BLOCO 1 -----
+    # ----- BLOCO 1 (últimos 10) -----
     df_b1 = build_last10(df_all)
     bloco1_list = []
     for _, r in df_b1.iterrows():
@@ -540,7 +563,7 @@ def main():
             "resumo": r["resumo"],
         })
 
-    # ------ HISTÓRICO p/ IA ------
+    # ------ HISTÓRICO p/ IA (com filtros) ------
     df_hist = df_all.copy()
     mask_send = []
     for _, row in df_hist.iterrows():
@@ -571,9 +594,8 @@ def main():
     json_path = save_json(payload_full)
     print(f"JSON: {os.path.basename(json_path)} (será limpo em ~1h)")
 
-    # ---------------- IA: Groq (ordem por arquivos 1-,2-,3-,...) ----------------
-    prompt = build_prompt_json(queixa_atual=queixa, bloco1_linhas=bloco1_list, historicos_filtrados=hist_json_records)
-    model_used, ia_json_str = groq_chat_json({"prompt": prompt, "max_tokens": 1800})
+    # ---------------- IA (Groq map–reduce + fail-over) ----------------
+    ia_json_str, provider_used = run_map_reduce_groq(queixa, bloco1_list, hist_json_records)
 
     bloco2, bloco3, bloco4, rodape = [], [], {"observacao": "", "conduta": ""}, []
 
@@ -592,7 +614,7 @@ def main():
             if isinstance(parsed.get("rodape"), list):
                 rodape = [str(x) for x in parsed["rodape"]]
         except Exception:
-            model_used = None
+            provider_used = None
             ia_json_str = None
 
     if not ia_json_str:
@@ -611,7 +633,7 @@ def main():
         "queixa_atual": queixa,
         "registros_total": int(len(df_all)),
         "provider_mode": "json" if ia_json_str else "fail",
-        "provider_used": model_used,
+        "provider_used": provider_used,
         "bloco1": bloco1_list,
         "bloco2": bloco2,
         "bloco3": bloco3,
