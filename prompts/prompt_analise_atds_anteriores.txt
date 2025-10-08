@@ -9,7 +9,7 @@ REGRAS DE AUDITORIA (OBRIGATÓRIAS)
 SAÍDA OBRIGATÓRIA
 Seguir as regras:
 Titulo: Resumo dos dez últimos atendimentos.
-Entregue: Liste os dez mais recentes atendimentos que o paciente teve. monte em formato de tabela considerando o formato: “id ({idprontuario} – {posto} – {datainicioconsulta} – {especialidade} e o ultimo, resumo, campo que nao existe no json, que e o resumo curto do atendimento em si, considerando os campos {queixa}, {observacao} e {conduta})”. Como o bloco um e apenas um resumo do atendimento, nao existe motivo para cair na regra tres, ja que voce nao vai inventar ou inferir, apenas resumir. Se nao houverem 10 atendimentos, liste os que tiverem, somente.
+Entregue: Resuma os dez mais recentes atendimentos que o paciente teve. Como o bloco um e apenas um resumo dos atendimentos, nao existe motivo para cair na regra tres, ja que voce nao vai inventar ou inferir, apenas resumir. Se nao houverem 10 atendimentos, resuma os que tiverem, somente. É importante priorizar  queixa e conduta.
 
 Seguir as regras:
 Titulo: Queixa atual nos atendimentos anteriores: 
