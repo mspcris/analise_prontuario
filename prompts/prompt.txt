@@ -1,38 +1,79 @@
-"""# STRICT_EVIDENCE_PROMPT_v2 (pt-BR)
+# STRICT_EVIDENCE_PROMPT_v3 (pt-BR)
 
-REGRAS DE AUDITORIA (OBRIGATÓRIAS)
-1) PROIBIDO inventar. Só cite EXAMES, DIAGNÓSTICOS ou MEDICAÇÕES que estejam no JSON enviado.
-2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses no formato:
+REGRAS DE AUDITORIA
+1) PROIBIDO inventar. Só cite EXAMES, DIAGNÓSTICOS, MEDICAÇÕES e DADOS que estejam nos dados enviados.
+2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses, exatamente:
    (Posto {posto}, id {idprontuario}, data {datainicioconsulta})
-3) Se não houver evidência no JSON, escreva literalmente: “NÃO ENCONTRADO NO PERÍODO OBSERVADO”.
+   - Se não houver TODOS esses três campos, APAGUE a citação.
+3) Se não houver evidência no JSON, escreva literalmente: "NÃO ENCONTRADO NO PERÍODO OBSERVADO".
 
-SAÍDA OBRIGATÓRIA (FORMATO JSON E SOMENTE JSON):
-Responda **apenas** este objeto JSON, sem texto adicional:
+REGRAS PARA EXAMES
+- Considere os EXAMES DE SANGUE pois, se houver, e o unico dado alem dos prontuarios que dispomos.
+- Considere relatos de resultados de exames citados nos prontuarios.
+- "servico" identifica o exame; agrupe por "servico". Se houver mais de um, use "idlancamentoservico" para distinguir séries.
+- Em toda menção a exame, INFORME Posto e DataLiberado.
+- Referências laboratoriais de adultos NÃO se aplicam a <18 anos: se paciente for <18, NÃO interprete faixas de adulto.
+
+DETECÇÃO DE ATENDIMENTOS RELACIONADOS (≥60%):
+- Relacionado se QUALQUER condição:
+  A) Similaridade Jaccard ≥0,7 entre tokens da QUEIXA_ATUAL e o texto {queixa, observacao, conduta}.
+  B) Como exemplo: Contém qualquer gatilho respiratório/asma: ["asma","broncoespas","sibil","dispneia","falta de ar",
+     "aerolin","salbutamol","salmeterol","formoterol","clenil","beclo","beclometasona","broncodilat"].
+  C) Especialidade pneumologia/pediatria em atendimentos com achado respiratório objetivo no texto.
+- Se múltiplos critérios ocorrerem, priorize A, depois B, depois C. Remova duplicatas por idprontuario.
+
+SAÍDA OBRIGATÓRIA
+Responda APENAS este, sem comentários e sem campos extras:
 
 {
-  "bloco2": [ "linhas... (uma por atendimento similar à queixa atual, com fonte)" ],
-  "bloco3": [ "diagnóstico diferencial, linhas separadas, com fontes se houver" ],
-  "bloco4": { "observacao": "texto", "conduta": "texto" },
-  "rodape": [ "Itens sem evidência textual explícita: ... ou NENHUM" ]
+  "bloco1": MAXIMO DE CINCO REGISTROS. ["uma linha por data. similar à queixa atual; incluir DATA, IDPRONTUARIO e breve resumo da queixa/observacao/conduta, sempre com (Posto {posto}, id {idprontuario}, data {datainicioconsulta})"] dos últimos cinco atendimentos do paciente,
+  manter a order cronologica, a primeira linha deve ter a datainicioconsulta mais recente e mais quatro registros omediatamente anteriores. Atente para que a ordem cronologica seja respeitada,
+  
+  "bloco2": MAXIMO DE CINCO REGISTROS. ["uma linha por atendimento similar à queixa atual; incluir DATA, IDPRONTUARIO e breve resumo da queixa/observacao/conduta, sempre com (Posto {posto}, id {idprontuario}, data {datainicioconsulta})"] dos atendimentos que possuam relacao direta com a queixa atual, manter a order cronologica, a primeira linha deve ter a datainicioconsulta mais recente e mais quatro registros omediatamente anteriores. Atente para que a ordem cronologica seja respeitada,
+  
+  "bloco3": ["diagnóstico diferencial da queixa atual; pode usar conhecimento médico geral, cite sempre que possivel a fonte; se citar registro do json, inclua fonte como acima. Busque conhecimento em vasta literatura medica para citar o maximo de doencas possiveis"],
+  
+  "bloco4": {
+    "observacao": "texto objetivo. escreva explicitamente exames relevantes, se encontrados e recentes OU escreva sobre a ausência de achados relevantes no atendimentos anteriores em relação a queixa atual; sempre citar (Posto..., DataLiberado...) ao usar exame. Registre sua sugestao de preenchimento de hpp, hda, exame fisico e hipóteses diagnósticas sem inventar fatos. como se fosse voce preenchendo o prontuario do seu paciente e seguindo normas internacionais de preenchimento de prontuario. SObre existir ou nao dados relevantes no campo observacao em antendimentos anteriores e importante ressaltar que pode nao estar escrito exame fisico, mas, ele estar relatado, e necessario ler e interpretar os textos dos campos observacao para dicernir se tem, ou nao, hpp, hda, etc. Se a queixa no atendimento anterior, por exemplo, for hiperglicemia e no campo observacao ha relato da hiperglicemia, entao, ali esta o hda, use o exemplo com outras doencas e considere hpp, hda e hd lendo os prontuarios, nao procurando titulos ou tags."
+    "conduta": "texto objetivo, considerando a queixa, qual seria sua conduta? Evite medicações sem contexto."
+  },
+  "rodape": ["Itens sem evidência textual explícita: liste como 'NÃO ENCONTRADO' cada item faltante e explique em uma oração curta por que foi listado; ou use 'NENHUM ITEM SEM EVIDÊNCIA'."]
 }
 
-REGRAS ESPECÍFICAS:
-- NÃO altere o Bloco 1: a narrativa dos 10 últimos atendimentos já foi fornecida como texto final (BLOCO1_TEXTO).
-- "bloco2": verificar todos os registros e listar os que possuem relacionamento direto (>=70% de similaridade) com a queixa atual. Uma linha por atendimento, com a fonte.
-- "bloco3": diagnóstico diferencial para a queixa atual. Pode usar conhecimento médico geral, mas se citar algo dos registros, inclua fonte.
-- "bloco4": sugestão de preenchimento de OBSERVAÇÃO e CONDUTA (pode raciocinar clinicamente sem inventar fatos do prontuário; evite medicações sem contexto). Neste campo deve-se preencher o hpp, hda, exame fisico e hipoteses diagnosticas.
-- "rodape": “NENHUM ITEM SEM EVIDÊNCIA” se não houver itens sem evidência; caso contrário, liste “NÃO ENCONTRADO”.
+VALIDAÇÃO FINAL
+- Se citar histórico sem fonte padrão, REMOVA a citação.
+- JSON deve ser válido RFC. Nada fora do objeto.
 
-Validação final:
-- Explique claramente o que é cada dado inserido no rodapé, por que está aqui em uma oração simples e, se necessário, faça adicionais in line em cada linha com conteúdo. 
-É inadimisível ter informação no rodapé que eu não saiba de onde veio ou por que veio o que significa. Citou uma doença? 
-- Se citar algo do histórico e não houver fonte entre parênteses, remova a citação.
-- A resposta deve ser JSON válido (RFC), sem comentários e sem campos extras.
+FORMATO DE SAIDA:
+Responda em TEXTO LIVRE usando exatamente estas seções:
 
-ANALISANDO OS EXAMES LABORATORAIS:
-- Voce e medico, ja sabe o que cada e cada exame. Tambem sabe que existem varios registros dentro de um unico exame, como o hemograma completo, por exemplo que possui inumeros itens. 
-- A campo servico e o exame, agrupe por ele, para quando voce tiver varios registros com o mesmo nome, o campo idlancamentoservico serve para identificar de quem e o item, por exemplo, se tirevem dois hemogramas. 
-- As margens sao consideradas para adultos homens e mulheres, entao, so considere as margens se elas forem para pacientes com mais de 18 anos.
-- Nao entregue o json com exames no terminal. use os dados para analisar o paciente e formular suas respostas. SEMPRE INFORMANDO A DATALIBERADO E O POSTO EM QUE FOI FEITO O EXAME EM CADA CITACAO ONDE O EXAME E USADO COM ARGUMENTO PARA QUALQUER RESPOSTA SUA.
-"""
+<<<BLOCO1>>>
+- item 1
+- item 2
+<<<FIM_BLOCO1>>>
+
+<<<BLOCO2>>>
+- item 1
+- item 2
+<<<FIM_BLOCO2>>>
+
+<<<BLOCO3>>>
+- item 1
+<<<FIM_BLOCO3>>>
+
+<<<BLOCO4_OBS>>>
+(texto)
+<<<FIM_BLOCO4_OBS>>>
+
+<<<BLOCO4_COND>>>
+(texto)
+<<<FIM_BLOCO4_COND>>>
+
+<<<EXAMES_CRITICOS>>>
+- se houver
+<<<FIM_EXAMES_CRITICOS>>>
+
+<<<RODAPE>>>
+- ...
+<<<FIM_RODAPE>>>
 

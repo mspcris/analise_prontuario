@@ -17,7 +17,6 @@ select
       ,lsri.[Alfanumerico]
       ,lsri.[Resultado] as [tempopararesultado]
       ,lsri.[Paciente]
-      ,lsri.[Matricula]
       ,lsri.[PostoCliente]
       ,lsri.[PostoColeta]
       ,lsri.[Idade]
