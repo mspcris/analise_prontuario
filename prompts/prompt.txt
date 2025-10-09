@@ -5,7 +5,6 @@ REGRAS DE AUDITORIA
 2) Sempre que citar algo clínico, ANEXE a FONTE entre parênteses, exatamente:
    (Posto {posto}, id {idprontuario}, data {datainicioconsulta})
    - Se não houver TODOS esses três campos, APAGUE a citação.
-3) Se não houver evidência no JSON, escreva literalmente: "NÃO ENCONTRADO NO PERÍODO OBSERVADO".
 
 REGRAS PARA EXAMES
 - Considere os EXAMES DE SANGUE pois, se houver, e o unico dado alem dos prontuarios que dispomos.
@@ -37,7 +36,7 @@ Responda APENAS este, sem comentários e sem campos extras:
     "observacao": "texto objetivo. escreva explicitamente exames relevantes, se encontrados e recentes OU escreva sobre a ausência de achados relevantes no atendimentos anteriores em relação a queixa atual; sempre citar (Posto..., DataLiberado...) ao usar exame. Registre sua sugestao de preenchimento de hpp, hda, exame fisico e hipóteses diagnósticas sem inventar fatos. como se fosse voce preenchendo o prontuario do seu paciente e seguindo normas internacionais de preenchimento de prontuario. SObre existir ou nao dados relevantes no campo observacao em antendimentos anteriores e importante ressaltar que pode nao estar escrito exame fisico, mas, ele estar relatado, e necessario ler e interpretar os textos dos campos observacao para dicernir se tem, ou nao, hpp, hda, etc. Se a queixa no atendimento anterior, por exemplo, for hiperglicemia e no campo observacao ha relato da hiperglicemia, entao, ali esta o hda, use o exemplo com outras doencas e considere hpp, hda e hd lendo os prontuarios, nao procurando titulos ou tags."
     "conduta": "texto objetivo, considerando a queixa, qual seria sua conduta? Evite medicações sem contexto."
   },
-  "rodape": ["Itens sem evidência textual explícita: liste como 'NÃO ENCONTRADO' cada item faltante e explique em uma oração curta por que foi listado; ou use 'NENHUM ITEM SEM EVIDÊNCIA'."]
+  "rodape": ["Oriente ao medico atendente que esta atendendo ao paciente neste momento riscos importantes sobre o atendimento, sobre como se preservar descrevendo bem no prontuario para evitar riscos juridicos, etc. uso NO MAXIMO 5 LINHAS"]
 }
 
 VALIDAÇÃO FINAL
